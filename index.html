@@ -17,8 +17,7 @@
     body {
       font-family: 'Comfortaa', sans-serif; 
       margin: 20px;
-      background: url('fondo.jpg') no-repeat center center fixed;
-      background-size: cover;
+      background: #f4f4f9; /* Fondo neutro detrás del formulario */
     }
     h1 { 
       text-align: center; 
@@ -28,19 +27,18 @@
       margin-bottom: 30px;
     }
     form {
-      background: rgba(255,255,255,0.9);
+      background: url('fondo.jpg') center/cover no-repeat;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
       max-width: 650px;
       margin: auto;
-      backdrop-filter: blur(2px);
     }
     label { 
       display: block; 
       margin-top: 15px; 
       text-transform: uppercase;
-      color: #34495e;
+      color: #ffffff;
       font-size: 1.1em;
     }
     input, select, textarea { 
@@ -49,9 +47,11 @@
       margin-top: 6px; 
       font-family: 'Comfortaa', sans-serif;
       font-weight: 400;
-      border: 2px solid #bdc3c7;
+      border: 2px solid #ffffff80;
       border-radius: 5px;
+      background-color: rgba(255,255,255,0.9);
       font-size: 14px;
+      color: #000;
     }
     input:focus, select:focus, textarea:focus {
       border-color: #3498db;
@@ -175,7 +175,6 @@
   <div id="message"></div>
 
   <script>
-    // Mostrar input "OTRO"
     document.querySelectorAll('select').forEach(select => {
       select.addEventListener('change', function() {
         const textInput = this.closest('label').querySelector('input[type="text"]');
@@ -195,12 +194,10 @@
       const formData = new FormData(e.target);
       const data = {};
 
-      // Asignar select + "OTRO"
       const tipoDoc = formData.get("TIPO DOCUMENTO_OPCION") === "OTRO" ? formData.get("TIPO DOCUMENTO") : formData.get("TIPO DOCUMENTO_OPCION");
       data["TIPO DOCUMENTO"] = tipoDoc.toUpperCase();
 
-      const sexo = formData.get("SEXO_OPCION");
-      data["SEXO"] = sexo.toUpperCase();
+      data["SEXO"] = formData.get("SEXO_OPCION").toUpperCase();
 
       const domicilio = formData.get("DOMICILIO_OPCION") === "OTRO" ? formData.get("DOMICILIO") : formData.get("DOMICILIO_OPCION");
       data["DOMICILIO"] = domicilio.toUpperCase();
@@ -214,23 +211,19 @@
       const com = formData.get("COMUNICARSE CON_OPCION") === "OTRO" ? formData.get("COMUNICARSE CON") : formData.get("COMUNICARSE CON_OPCION");
       data["COMUNICARSE CON:"] = com.toUpperCase();
 
-      // INTÉRPRETE
       const interpreteSel = formData.get("INTERPRETE_OPCION");
       const interpreteOtro = formData.get("INTERPRETE");
       data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? interpreteOtro.toUpperCase() : "NO";
 
-      // OTROS DERECHOS
       const otros = formData.getAll("OTROS DERECHOS");
       data["OTROS DERECHOS"] = otros.length ? otros.map(v => v.toUpperCase()).join(", ") : "NINGUNO";
 
-      // Resto de campos libres (Nombre, Resumen, etc)
       formData.forEach((value, key) => {
         if (value && value.trim() !== "" && !key.includes("_OPCION") && !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE"].includes(key)) {
           data[key] = value.toUpperCase();
         }
       });
 
-      // Cabeceras fijas
       const headers = [
         "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
         "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
@@ -242,7 +235,6 @@
       const row = {};
       headers.forEach(h => row[h] = data[h] || "");
 
-      // Excel
       const ws = XLSX.utils.json_to_sheet([row], { header: headers });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
