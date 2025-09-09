@@ -9,7 +9,6 @@
   <!-- Fuente Comfortaa -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
 
-  <!-- Librerías -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
@@ -18,7 +17,7 @@
     body {
       font-family: 'Comfortaa', sans-serif; 
       margin: 20px;
-      background: #f4f4f9; /* Fondo neutro detrás del formulario */
+      background: #f4f4f9;
     }
     h1 { 
       text-align: center; 
@@ -32,7 +31,7 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      max-width: 680px;
+      max-width: 650px;
       margin: auto;
     }
     label { 
@@ -40,7 +39,7 @@
       margin-top: 15px; 
       text-transform: uppercase;
       color: #ffffff;
-      font-size: 1.05em;
+      font-size: 1.1em;
     }
     input, select, textarea { 
       width: 100%; 
@@ -78,9 +77,9 @@
       font-weight: bold; 
       text-align: center; 
       white-space: pre-line;
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
+    
+    /* Estilos para checkboxes */
     .checkbox-group {
       margin-top: 8px;
       margin-left: 10px;
@@ -103,7 +102,6 @@
 </head>
 <body>
   <h1>Registro de Detenidos</h1>
-
   <form id="registroForm">
     <label>TIPO DOCUMENTO:
       <select name="TIPO DOCUMENTO_OPCION">
@@ -189,13 +187,6 @@
       <input type="text" name="INTERPRETE" placeholder="Especificar idioma" style="display:none;">
     </label>
 
-    <label>ENVIAR A:</label>
-    <div class="checkbox-group">
-      <label><input type="checkbox" name="DESTINATARIOS" value="jtnf20@gmail.com"> GTD</label>
-      <label><input type="checkbox" name="DESTINATARIOS" value="javiertnf16@hotmail.com"> ODAC</label>
-      <label><input type="checkbox" name="DESTINATARIOS" value="jbejarnavarrete@hotmail.com"> S.C.</label>
-    </div>
-
     <button type="submit">Generar archivo</button>
   </form>
 
@@ -243,7 +234,7 @@
       // INTÉRPRETE independiente
       const interpreteSel = formData.get("INTERPRETE_OPCION");
       const interpreteOtro = formData.get("INTERPRETE");
-      data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? (interpreteOtro || "NO").toUpperCase() : "NO";
+      data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? interpreteOtro.toUpperCase() : "NO";
 
       // OTROS DERECHOS (checkboxes)
       const otros = [];
@@ -252,64 +243,43 @@
 
       // Resto de campos libres
       formData.forEach((value, key) => {
-        if (
-          value && value.trim() !== "" &&
-          !key.includes("_OPCION") &&
-          !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE","OTROS DERECHOS","DESTINATARIOS"].includes(key)
-        ) {
+        if (value && value.trim() !== "" && !key.includes("_OPCION") && !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE","OTROS DERECHOS"].includes(key)) {
           data[key] = value.toUpperCase();
         }
       });
 
-      // Cabeceras fijas (todas las columnas siempre en el mismo orden)
+      // Cabeceras fijas
       const headers = [
         "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
         "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
         "DELITO","C.P. AGENTES","DILIGENCIAS","LUGAR DEL HECHO","LUGAR DE LA DETENCIÓN",
         "HORA DEL HECHO","HORA DE LA DETENCIÓN","BREVE RESUMEN DE LOS HECHOS",
-        "INDICIOS POR LOS QUE SE DETIENE","ABOGADO","COMUNICARSE CON:","OTROS DERECHOS","INTERPRETE"
+        "INDICIOS POR LOS QUE SE DETIENE","ABOGADO","COMUNICARSE CON:","OTROS DERECHOS",
+        "INTERPRETE"
       ];
       const row = {};
       headers.forEach(h => row[h] = data[h] || "");
 
-      // Crear Excel
+      // Excel
       const ws = XLSX.utils.json_to_sheet([row], { header: headers });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const excelBlob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
-      // ZIP con contraseña "americas"
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
       try {
         const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
           password: "americas",
           encryptionStrength: 3
         });
-        await writer.add("DETENIDO.xlsx", new zip.BlobReader(excelBlob));
+        await writer.add("DETENIDO.xlsx", new zip.BlobReader(blob));
         const zipBlob = await writer.close();
-
         saveAs(zipBlob, "DETENIDO.zip");
         showMessage("✅ Archivo 'DETENIDO.zip' generado y descargado.\nProtegido con contraseña: americas");
-
-        // Recoger destinatarios marcados y abrir correo
-        const destinatarios = [];
-        document.querySelectorAll('input[name="DESTINATARIOS"]:checked')
-          .forEach(cb => destinatarios.push(cb.value));
-
-        if (destinatarios.length > 0) {
-          const to = destinatarios.join(",");
-          const asunto = "Nuevo detenido registrado";
-          const cuerpo = "Adjunto archivo DETENIDO.zip generado desde el sistema.";
-          setTimeout(() => {
-            window.location.href = `mailto:${to}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-          }, 1000);
-        } else {
-          showMessage("✅ Archivo generado. ⚠️ No se seleccionó ningún destinatario para el correo.");
-        }
       } catch (err) {
-        // Fallback: descargar Excel sin ZIP si el cifrado no es soportado
-        saveAs(excelBlob, "DETENIDO.xlsx");
-        showMessage("⚠️ No se pudo cifrar ZIP. Se descargó Excel sin proteger.");
+        saveAs(blob, "DETENIDO.xlsx");
+        showMessage("⚠️ No se pudo cifrar ZIP, se descargó Excel sin proteger.");
       }
     });
   </script>
