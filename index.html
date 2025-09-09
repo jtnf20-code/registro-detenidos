@@ -1,138 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Detenidos</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <meta name="theme-color" content="#4285f4">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; }
-        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        h1 { color: #4285f4; text-align: center; margin-bottom: 30px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        input[type="text"], input[type="date"], input[type="time"], textarea { 
-            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;
-        }
-        button { background-color: #4285f4; color: white; padding: 15px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
-        button:hover { background-color: #3367d6; }
-        .message { margin-top: 20px; padding: 15px; border-radius: 4px; background-color: #e6ffe6; border: 1px solid #00cc00; color: #006600; display: none; }
-        .loading { display: none; text-align: center; margin-top: 20px; }
-        .checkbox-group { margin-bottom: 15px; }
-        .checkbox-group label { display: inline; margin-left: 8px; font-weight: normal; }
-        .checkbox-group input[type="checkbox"] { width: auto; margin-right: 5px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Detenidos</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+    h1 { text-align: center; }
+    form { background: white; padding: 20px; border-radius: 8px;
+           box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px;
+           margin: auto; }
+    label { display: block; margin-top: 15px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px; background: #4285f4; color: white;
+             border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+    button:hover { background: #357ae8; }
+    #message { margin-top: 20px; font-weight: bold; text-align: center; white-space: pre-line; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📋 Registro de Detenidos</h1>
-        <form id="detenidoForm">
-            <label for="nombre">Nombre del Detenido:</label>
-            <input type="text" id="nombre" required>
-            <label for="delito">Delito:</label>
-            <input type="text" id="delito" required>
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" required>
-            <label for="hora">Hora:</label>
-            <input type="time" id="hora" required>
-            <label for="lugar">Lugar:</label>
-            <input type="text" id="lugar" required>
-            <label for="observaciones">Observaciones:</label>
-            <textarea id="observaciones" rows="4"></textarea>
-            <label>Enviar a:</label>
-            <div class="checkbox-group">
-                <input type="checkbox" id="gtd" value="javiertnf16@hotmail.com"><label for="gtd">GTD</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="odac" value="jbejarnavarrete@gmail.com"><label for="odac">ODAC</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="sc" value="jtnf20@gmail.com"><label for="sc">S.C.</label>
-            </div>
-            <label for="password">Contraseña para proteger el archivo:</label>
-            <input type="text" id="password" value="detenido2024" required>
-            <button type="submit">📧 Generar y Enviar</button>
-        </form>
-        <div class="loading" id="loading"><p>⏳ Generando archivo...</p></div>
-        <div id="message" class="message"></div>
-    </div>
+  <h1>Registro de Detenidos</h1>
+  <form id="registroForm">
+    <label>Nombre:
+      <input type="text" name="nombre" required>
+    </label>
+    <label>Delito:
+      <input type="text" name="delito" required>
+    </label>
+    <label>Fecha:
+      <input type="date" name="fecha" required>
+    </label>
+    <label>DNI:
+      <input type="text" name="dni" required>
+    </label>
+    <button type="submit">Generar archivo</button>
+  </form>
 
-    <!-- Librerías -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <div id="message"></div>
 
-    <script>
-    document.getElementById('detenidoForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('message').style.display = 'none';
-
-        try {
-            const nombre = document.getElementById('nombre').value;
-            const delito = document.getElementById('delito').value;
-            const fecha = document.getElementById('fecha').value;
-            const hora = document.getElementById('hora').value;
-            const lugar = document.getElementById('lugar').value;
-            const observaciones = document.getElementById('observaciones').value;
-            const password = document.getElementById('password').value;
-
-            const destinatarios = [];
-            if (document.getElementById('gtd').checked) destinatarios.push('javiertnf16@hotmail.com');
-            if (document.getElementById('odac').checked) destinatarios.push('jbejarnavarrete@gmail.com');
-            if (document.getElementById('sc').checked) destinatarios.push('jtnf20@gmail.com');
-            if (!destinatarios.length) { alert("⚠️ Selecciona al menos un destinatario"); return; }
-
-            // Crear Excel
-            const data = [
-                ["Campo", "Valor"],
-                ["Nombre del Detenido", nombre],
-                ["Delito", delito],
-                ["Fecha", fecha],
-                ["Hora", hora],
-                ["Lugar", lugar],
-                ["Observaciones", observaciones],
-                ["Registro", new Date().toLocaleString()]
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Detenido");
-            const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-
-            // Cifrar como base64
-            const excelBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(excelBuffer)));
-            const encrypted = CryptoJS.AES.encrypt(excelBase64, password).toString();
-
-            // Preparar archivo .xlsx Cifrado
-            const zip = new JSZip();
-            zip.file("DETENIDO.xlsx", encrypted); // extensión xlsx pero contenido cifrado
-            zip.file("LEEME.txt", `Archivo protegido con contraseña. Usa la clave: ${password}`);
-
-            const zipBlob = await zip.generateAsync({ type: "blob" });
-            const fileName = `DETENIDO_${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
-            saveAs(zipBlob, fileName);
-
-            showMessage("✅ Archivo cifrado generado y descargado: " + fileName);
-        } catch (e) {
-            console.error(e);
-            showMessage("❌ Error: " + e.message);
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
-    });
-
-    function showMessage(text) {
-        const msg = document.getElementById('message');
-        msg.textContent = text;
-        msg.style.display = 'block';
+  <script>
+    function showMessage(msg) {
+      document.getElementById("message").innerText = msg;
     }
 
-    window.addEventListener('load', () => {
-        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-        document.getElementById('hora').value = new Date().toTimeString().slice(0,5);
+    document.getElementById("registroForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = Object.fromEntries(new FormData(e.target).entries());
+
+      // Crear Excel
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet([formData]);
+      XLSX.utils.book_append_sheet(wb, ws, "Registro");
+
+      // XLSX en formato binario array
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+      // Crear ZIP con el XLSX dentro
+      const zip = new JSZip();
+      zip.file("DETENIDO.xlsx", new Uint8Array(wbout)); // siempre DETENIDO.xlsx
+
+      zip.generateAsync({ type: "blob" }).then(function(zipBlob) {
+        // Descargar
+        saveAs(zipBlob, "DETENIDO.zip");
+
+        // Mensaje al usuario
+        showMessage(`✅ El archivo "DETENIDO.zip" ha sido generado y descargado.\nAdjúntalo manualmente al correo que corresponda.`);
+      });
     });
-    </script>
+  </script>
 </body>
 </html>
