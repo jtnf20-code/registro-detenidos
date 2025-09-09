@@ -12,10 +12,9 @@
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
     h1 { text-align: center; }
     form { background: white; padding: 20px; border-radius: 8px;
-           box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px;
-           margin: auto; }
-    label { display: block; margin-top: 15px; }
-    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+           max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    label { display: block; margin-top: 10px; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; }
     button { margin-top: 20px; padding: 10px; background: #4285f4; color: white;
              border: none; border-radius: 5px; cursor: pointer; width: 100%; }
     button:hover { background: #357ae8; }
@@ -25,18 +24,84 @@
 <body>
   <h1>Registro de Detenidos</h1>
   <form id="registroForm">
-    <label>Nombre:
-      <input type="text" name="nombre" required>
+    <label>TIPO DOCUMENTO:
+      <select name="TIPO DOCUMENTO" required>
+        <option value="DNI">DNI</option>
+        <option value="NIE">NIE</option>
+        <option value="INDOCUMENTADO">INDOCUMENTADO</option>
+        <option value="">OTRO (rellenar abajo)</option>
+      </select>
+      <input type="text" name="TIPO DOCUMENTO OTRO" placeholder="Otro">
     </label>
-    <label>Delito:
-      <input type="text" name="delito" required>
+
+    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO" required></label>
+    <label>SEXO:
+      <select name="SEXO" required>
+        <option value="MASCULINO">MASCULINO</option>
+        <option value="FEMENINO">FEMENINO</option>
+      </select>
     </label>
-    <label>Fecha:
-      <input type="date" name="fecha" required>
+    <label>Nombre: <input type="text" name="Nombre" required></label>
+    <label>APELLIDOS: <input type="text" name="APELLIDOS" required></label>
+    <label>Nombre de los Padres: <input type="text" name="Nombre de los Padres"></label>
+    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
+    <label>LUGAR DE NACIMIENTO: <input type="text" name="LUGAR DE NACIMIENTO"></label>
+    <label>NACIONALIDAD: <input type="text" name="NACIONALIDAD"></label>
+
+    <label>DOMICILIO:
+      <select name="DOMICILIO_OPCION">
+        <option value="NO APORTA">NO APORTA</option>
+        <option value="">OTRO (rellenar abajo)</option>
+      </select>
+      <input type="text" name="DOMICILIO" placeholder="Otro">
     </label>
-    <label>DNI:
-      <input type="text" name="dni" required>
+
+    <label>TELÉFONO:
+      <select name="TELÉFONO_OPCION">
+        <option value="NO APORTA">NO APORTA</option>
+        <option value="">OTRO (rellenar abajo)</option>
+      </select>
+      <input type="text" name="TELÉFONO" placeholder="Otro">
     </label>
+
+    <label>DELITO: <input type="text" name="DELITO"></label>
+    <label>C.P. AGENTES: <input type="text" name="C.P. AGENTES"></label>
+    <label>DILIGENCIAS: <input type="text" name="DILIGENCIAS"></label>
+    <label>LUGAR DEL HECHO: <input type="text" name="LUGAR DEL HECHO"></label>
+    <label>LUGAR DE LA DETENCIÓN: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
+    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
+    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
+    <label>BREVE RESUMEN DE LOS HECHOS:
+      <textarea name="BREVE RESUMEN DE LOS HECHOS"></textarea>
+    </label>
+    <label>INDICIOS POR LOS QUE SE DETIENE:
+      <textarea name="INDICIOS POR LOS QUE SE DETIENE"></textarea>
+    </label>
+
+    <label>ABOGADO:
+      <select name="ABOGADO_OPCION">
+        <option value="DE OFICIO">DE OFICIO</option>
+        <option value="">OTRO (rellenar abajo)</option>
+      </select>
+      <input type="text" name="ABOGADO" placeholder="Otro">
+    </label>
+
+    <label>COMUNICARSE CON:
+      <select name="COMUNICARSE CON_OPCION">
+        <option value="NADIE">NADIE</option>
+        <option value="">OTRO (rellenar abajo)</option>
+      </select>
+      <input type="text" name="COMUNICARSE CON" placeholder="Otro">
+    </label>
+
+    <label>OTROS DERECHOS:
+      <select name="OTROS DERECHOS" multiple>
+        <option value="MEDICO">MÉDICO</option>
+        <option value="CONSULADO">CONSULADO</option>
+        <option value="INTERPRETE">INTÉRPRETE</option>
+      </select>
+    </label>
+
     <button type="submit">Generar archivo</button>
   </form>
 
@@ -50,26 +115,26 @@
     document.getElementById("registroForm").addEventListener("submit", async function(e) {
       e.preventDefault();
 
-      const formData = Object.fromEntries(new FormData(e.target).entries());
+      const data = {};
+      new FormData(e.target).forEach((value, key) => {
+        if (value && value.trim() !== "") {
+          data[key] = value.toUpperCase(); // todas respuestas en MAYÚSCULAS
+        }
+      });
 
-      // Crear Excel
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet([formData]);
+      const ws = XLSX.utils.json_to_sheet([data]);
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
 
-      // XLSX en formato binario array
       const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
-      // Crear ZIP con el XLSX dentro
       const zip = new JSZip();
-      zip.file("DETENIDO.xlsx", new Uint8Array(wbout)); // siempre DETENIDO.xlsx
+      // ⚠️ PROTEGIDO CON CONTRASEÑA para el archivo interno
+      zip.file("DETENIDO.xlsx", new Uint8Array(wbout), {compression: "DEFLATE", password: "CLAVE123"});
 
-      zip.generateAsync({ type: "blob" }).then(function(zipBlob) {
-        // Descargar
+      zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function(zipBlob) {
         saveAs(zipBlob, "DETENIDO.zip");
-
-        // Mensaje al usuario
-        showMessage(`✅ El archivo "DETENIDO.zip" ha sido generado y descargado.\nAdjúntalo manualmente al correo que corresponda.`);
+        showMessage(`✅ Archivo "DETENIDO.zip" generado y descargado.\nProtegido con contraseña.`);
       });
     });
   </script>
