@@ -9,6 +9,7 @@
   <!-- Fuente Comfortaa -->
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
 
+  <!-- Librerías -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
@@ -17,7 +18,7 @@
     body {
       font-family: 'Comfortaa', sans-serif; 
       margin: 20px;
-      background: #f4f4f9;
+      background: #f4f4f9; /* Fondo neutro detrás del formulario */
     }
     h1 { 
       text-align: center; 
@@ -31,7 +32,7 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      max-width: 650px;
+      max-width: 680px;
       margin: auto;
     }
     label { 
@@ -39,7 +40,7 @@
       margin-top: 15px; 
       text-transform: uppercase;
       color: #ffffff;
-      font-size: 1.1em;
+      font-size: 1.05em;
     }
     input, select, textarea { 
       width: 100%; 
@@ -77,6 +78,8 @@
       font-weight: bold; 
       text-align: center; 
       white-space: pre-line;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
     .checkbox-group {
       margin-top: 8px;
@@ -100,9 +103,77 @@
 </head>
 <body>
   <h1>Registro de Detenidos</h1>
-  <form id="registroForm">
 
-    <!-- ... [todos los campos anteriores permanecen igual: TIPO DOCUMENTO, NOMBRE, etc.] ... -->
+  <form id="registroForm">
+    <label>TIPO DOCUMENTO:
+      <select name="TIPO DOCUMENTO_OPCION">
+        <option value="DNI" selected>DNI</option>
+        <option value="NIE">NIE</option>
+        <option value="INDOCUMENTADO">INDOCUMENTADO</option>
+        <option value="OTRO">OTRO</option>
+      </select>
+      <input type="text" name="TIPO DOCUMENTO" placeholder="Especificar otro" style="display:none;">
+    </label>
+
+    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO"></label>
+    <label>SEXO:
+      <select name="SEXO_OPCION">
+        <option value="MASCULINO" selected>MASCULINO</option>
+        <option value="FEMENINO">FEMENINO</option>
+      </select>
+    </label>
+    <label>NOMBRE: <input type="text" name="Nombre"></label>
+    <label>APELLIDOS: <input type="text" name="APELLIDOS"></label>
+    <label>NOMBRE DE LOS PADRES: <input type="text" name="Nombre de los Padres"></label>
+    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
+    <label>LUGAR DE NACIMIENTO: <input type="text" name="LUGAR DE NACIMIENTO"></label>
+    <label>NACIONALIDAD: <input type="text" name="NACIONALIDAD"></label>
+
+    <label>DOMICILIO:
+      <select name="DOMICILIO_OPCION">
+        <option value="NO APORTA" selected>NO APORTA</option>
+        <option value="OTRO">OTRO</option>
+      </select>
+      <input type="text" name="DOMICILIO" placeholder="Especificar domicilio" style="display:none;">
+    </label>
+
+    <label>TELÉFONO:
+      <select name="TELÉFONO_OPCION">
+        <option value="NO APORTA" selected>NO APORTA</option>
+        <option value="OTRO">OTRO</option>
+      </select>
+      <input type="text" name="TELÉFONO" placeholder="Especificar teléfono" style="display:none;">
+    </label>
+
+    <label>DELITO: <input type="text" name="DELITO"></label>
+    <label>C.P. AGENTES: <input type="text" name="C.P. AGENTES"></label>
+    <label>DILIGENCIAS: <input type="text" name="DILIGENCIAS"></label>
+    <label>LUGAR DEL HECHO: <input type="text" name="LUGAR DEL HECHO"></label>
+    <label>LUGAR DE LA DETENCIÓN: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
+    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
+    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
+    <label>BREVE RESUMEN DE LOS HECHOS:
+      <textarea name="BREVE RESUMEN DE LOS HECHOS" rows="3"></textarea>
+    </label>
+    <label>INDICIOS POR LOS QUE SE DETIENE:
+      <textarea name="INDICIOS POR LOS QUE SE DETIENE" rows="3"></textarea>
+    </label>
+
+    <label>ABOGADO:
+      <select name="ABOGADO_OPCION">
+        <option value="DE OFICIO" selected>DE OFICIO</option>
+        <option value="OTRO">OTRO</option>
+      </select>
+      <input type="text" name="ABOGADO" placeholder="Especificar abogado" style="display:none;">
+    </label>
+
+    <label>COMUNICARSE CON:
+      <select name="COMUNICARSE CON_OPCION">
+        <option value="NADIE" selected>NADIE</option>
+        <option value="OTRO">OTRO</option>
+      </select>
+      <input type="text" name="COMUNICARSE CON" placeholder="Especificar contacto" style="display:none;">
+    </label>
 
     <label>OTROS DERECHOS:</label>
     <div class="checkbox-group">
@@ -131,6 +202,7 @@
   <div id="message"></div>
 
   <script>
+    // Mostrar/ocultar input si elige "OTRO"
     document.querySelectorAll('select').forEach(select => {
       select.addEventListener('change', function() {
         const textInput = this.closest('label').querySelector('input[type="text"]');
@@ -150,32 +222,76 @@
       const formData = new FormData(e.target);
       const data = {};
 
-      // ... [recogida de campos del formulario igual que antes] ...
+      // Selects con "OTRO" o valor por defecto
+      const tipoDoc = formData.get("TIPO DOCUMENTO_OPCION") === "OTRO" ? formData.get("TIPO DOCUMENTO") : formData.get("TIPO DOCUMENTO_OPCION");
+      data["TIPO DOCUMENTO"] = (tipoDoc || "DNI").toUpperCase();
 
-      // OTROS DERECHOS (checkbox)
+      data["SEXO"] = (formData.get("SEXO_OPCION") || "MASCULINO").toUpperCase();
+
+      const domicilio = formData.get("DOMICILIO_OPCION") === "OTRO" ? formData.get("DOMICILIO") : formData.get("DOMICILIO_OPCION");
+      data["DOMICILIO"] = (domicilio || "NO APORTA").toUpperCase();
+
+      const tel = formData.get("TELÉFONO_OPCION") === "OTRO" ? formData.get("TELÉFONO") : formData.get("TELÉFONO_OPCION");
+      data["TELÉFONO"] = (tel || "NO APORTA").toUpperCase();
+
+      const abo = formData.get("ABOGADO_OPCION") === "OTRO" ? formData.get("ABOGADO") : formData.get("ABOGADO_OPCION");
+      data["ABOGADO"] = (abo || "DE OFICIO").toUpperCase();
+
+      const com = formData.get("COMUNICARSE CON_OPCION") === "OTRO" ? formData.get("COMUNICARSE CON") : formData.get("COMUNICARSE CON_OPCION");
+      data["COMUNICARSE CON:"] = (com || "NADIE").toUpperCase();
+
+      // INTÉRPRETE independiente
+      const interpreteSel = formData.get("INTERPRETE_OPCION");
+      const interpreteOtro = formData.get("INTERPRETE");
+      data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? (interpreteOtro || "NO").toUpperCase() : "NO";
+
+      // OTROS DERECHOS (checkboxes)
       const otros = [];
       document.querySelectorAll('input[name="OTROS DERECHOS"]:checked').forEach(cb => otros.push(cb.value));
       data["OTROS DERECHOS"] = otros.length ? otros.map(v => v.toUpperCase()).join(", ") : "NINGUNO";
 
-      // INTÉRPRETE
-      const interpreteSel = formData.get("INTERPRETE_OPCION");
-      const interpreteOtro = formData.get("INTERPRETE");
-      data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? interpreteOtro.toUpperCase() : "NO";
+      // Resto de campos libres
+      formData.forEach((value, key) => {
+        if (
+          value && value.trim() !== "" &&
+          !key.includes("_OPCION") &&
+          !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE","OTROS DERECHOS","DESTINATARIOS"].includes(key)
+        ) {
+          data[key] = value.toUpperCase();
+        }
+      });
 
-      // ... [Excel + ZIP como antes] ...
+      // Cabeceras fijas (todas las columnas siempre en el mismo orden)
+      const headers = [
+        "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
+        "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
+        "DELITO","C.P. AGENTES","DILIGENCIAS","LUGAR DEL HECHO","LUGAR DE LA DETENCIÓN",
+        "HORA DEL HECHO","HORA DE LA DETENCIÓN","BREVE RESUMEN DE LOS HECHOS",
+        "INDICIOS POR LOS QUE SE DETIENE","ABOGADO","COMUNICARSE CON:","OTROS DERECHOS","INTERPRETE"
+      ];
+      const row = {};
+      headers.forEach(h => row[h] = data[h] || "");
 
+      // Crear Excel
+      const ws = XLSX.utils.json_to_sheet([row], { header: headers });
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registro");
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const excelBlob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+      // ZIP con contraseña "americas"
       try {
         const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
           password: "americas",
           encryptionStrength: 3
         });
-        const wbout = XLSX.write(XLSX.utils.book_new(), { bookType: "xlsx", type: "array" });
-        await writer.add("DETENIDO.xlsx", new zip.BlobReader(new Blob([wbout])));
+        await writer.add("DETENIDO.xlsx", new zip.BlobReader(excelBlob));
         const zipBlob = await writer.close();
+
         saveAs(zipBlob, "DETENIDO.zip");
         showMessage("✅ Archivo 'DETENIDO.zip' generado y descargado.\nProtegido con contraseña: americas");
 
-        // Recoger destinatarios marcados
+        // Recoger destinatarios marcados y abrir correo
         const destinatarios = [];
         document.querySelectorAll('input[name="DESTINATARIOS"]:checked')
           .forEach(cb => destinatarios.push(cb.value));
@@ -188,14 +304,14 @@
             window.location.href = `mailto:${to}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
           }, 1000);
         } else {
-          showMessage("⚠️ Archivo generado pero no se seleccionó ningún destinatario.");
+          showMessage("✅ Archivo generado. ⚠️ No se seleccionó ningún destinatario para el correo.");
         }
-
       } catch (err) {
-        showMessage("⚠️ Error al generar ZIP.");
+        // Fallback: descargar Excel sin ZIP si el cifrado no es soportado
+        saveAs(excelBlob, "DETENIDO.xlsx");
+        showMessage("⚠️ No se pudo cifrar ZIP. Se descargó Excel sin proteger.");
       }
     });
   </script>
 </body>
 </html>
-
