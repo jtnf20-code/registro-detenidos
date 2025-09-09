@@ -5,28 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Registro de Detenidos</title>
   <link rel="manifest" href="manifest.json">
-  <!-- Fuentes Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- Fuente Comfortaa -->
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <!-- Librería zip.js con soporte de cifrado -->
+  <!-- Librería zip.js para cifrado -->
   <script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
+
   <style>
     body { font-family: 'Comfortaa', sans-serif; margin: 20px; background: #f4f4f9; }
     h1 { 
       text-align: center; 
-      font-family: 'Pacifico', cursive; 
+      font-family: 'Comfortaa', sans-serif;
       text-transform: uppercase;
       color: #2c3e50;
-      font-size: 2.5em;
+      font-size: 2.2em;
       margin-bottom: 30px;
     }
     form { background: white; padding: 20px; border-radius: 8px;
-           box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+           box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 650px; margin: auto; }
     label { 
       display: block; 
       margin-top: 15px; 
-      font-family: 'Pacifico', cursive;
+      font-family: 'Comfortaa', sans-serif;
       text-transform: uppercase;
       color: #34495e;
       font-size: 1.1em;
@@ -34,7 +37,7 @@
     input, select, textarea { 
       width: 100%; 
       padding: 10px; 
-      margin-top: 8px; 
+      margin-top: 6px; 
       font-family: 'Comfortaa', sans-serif;
       font-weight: 400;
       border: 2px solid #bdc3c7;
@@ -67,99 +70,95 @@
       white-space: pre-line;
       font-family: 'Comfortaa', sans-serif;
     }
-    small {
-      font-family: 'Comfortaa', sans-serif;
-      font-size: 12px;
-      color: #7f8c8d;
-    }
   </style>
 </head>
 <body>
   <h1>Registro de Detenidos</h1>
+
   <form id="registroForm">
-    <label>tipo documento:
+    <!-- Campos: selects con opción "OTRO" muestran input adicional -->
+    <label>TIPO DOCUMENTO:
       <select name="TIPO DOCUMENTO">
         <option value="">Seleccionar...</option>
         <option value="DNI">DNI</option>
         <option value="NIE">NIE</option>
         <option value="INDOCUMENTADO">INDOCUMENTADO</option>
-        <option value="OTRO">OTRO (rellenar abajo)</option>
+        <option value="OTRO">OTRO</option>
       </select>
       <input type="text" name="TIPO DOCUMENTO OTRO" placeholder="Especificar otro tipo" style="display:none;">
     </label>
 
-    <label>nºdocumento: <input type="text" name="NºDOCUMENTO"></label>
-    <label>sexo:
+    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO"></label>
+    <label>SEXO:
       <select name="SEXO">
         <option value="">Seleccionar...</option>
         <option value="MASCULINO">MASCULINO</option>
         <option value="FEMENINO">FEMENINO</option>
       </select>
     </label>
-    <label>nombre: <input type="text" name="Nombre"></label>
-    <label>apellidos: <input type="text" name="APELLIDOS"></label>
-    <label>nombre de los padres: <input type="text" name="Nombre de los Padres"></label>
-    <label>fecha de nacimiento: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
-    <label>lugar de nacimiento: <input type="text" name="LUGAR DE NACIMIENTO"></label>
-    <label>nacionalidad: <input type="text" name="NACIONALIDAD"></label>
+    <label>NOMBRE: <input type="text" name="Nombre"></label>
+    <label>APELLIDOS: <input type="text" name="APELLIDOS"></label>
+    <label>NOMBRE DE LOS PADRES: <input type="text" name="Nombre de los Padres"></label>
+    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
+    <label>LUGAR DE NACIMIENTO: <input type="text" name="LUGAR DE NACIMIENTO"></label>
+    <label>NACIONALIDAD: <input type="text" name="NACIONALIDAD"></label>
 
-    <label>domicilio:
+    <label>DOMICILIO:
       <select name="DOMICILIO_OPCION">
         <option value="">Seleccionar...</option>
         <option value="NO APORTA">NO APORTA</option>
-        <option value="OTRO">OTRO (rellenar abajo)</option>
+        <option value="OTRO">OTRO</option>
       </select>
       <input type="text" name="DOMICILIO" placeholder="Especificar domicilio" style="display:none;">
     </label>
 
-    <label>teléfono:
+    <label>TELÉFONO:
       <select name="TELÉFONO_OPCION">
         <option value="">Seleccionar...</option>
         <option value="NO APORTA">NO APORTA</option>
-        <option value="OTRO">OTRO (rellenar abajo)</option>
+        <option value="OTRO">OTRO</option>
       </select>
       <input type="text" name="TELÉFONO" placeholder="Especificar teléfono" style="display:none;">
     </label>
 
-    <label>delito: <input type="text" name="DELITO"></label>
-    <label>c.p. agentes: <input type="text" name="C.P. AGENTES"></label>
-    <label>diligencias: <input type="text" name="DILIGENCIAS"></label>
-    <label>lugar del hecho: <input type="text" name="LUGAR DEL HECHO"></label>
-    <label>lugar de la detención: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
-    <label>hora del hecho: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
-    <label>hora de la detención: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
-    <label>breve resumen de los hechos:
+    <label>DELITO: <input type="text" name="DELITO"></label>
+    <label>C.P. AGENTES: <input type="text" name="C.P. AGENTES"></label>
+    <label>DILIGENCIAS: <input type="text" name="DILIGENCIAS"></label>
+    <label>LUGAR DEL HECHO: <input type="text" name="LUGAR DEL HECHO"></label>
+    <label>LUGAR DE LA DETENCIÓN: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
+    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
+    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
+    <label>BREVE RESUMEN DE LOS HECHOS:
       <textarea name="BREVE RESUMEN DE LOS HECHOS" rows="3"></textarea>
     </label>
-    <label>indicios por los que se detiene:
+    <label>INDICIOS POR LOS QUE SE DETIENE:
       <textarea name="INDICIOS POR LOS QUE SE DETIENE" rows="3"></textarea>
     </label>
 
-    <label>abogado:
+    <label>ABOGADO:
       <select name="ABOGADO_OPCION">
         <option value="">Seleccionar...</option>
         <option value="DE OFICIO">DE OFICIO</option>
-        <option value="OTRO">OTRO (rellenar abajo)</option>
+        <option value="OTRO">OTRO</option>
       </select>
       <input type="text" name="ABOGADO" placeholder="Especificar abogado" style="display:none;">
     </label>
 
-    <label>comunicarse con:
+    <label>COMUNICARSE CON:
       <select name="COMUNICARSE CON_OPCION">
         <option value="">Seleccionar...</option>
         <option value="NADIE">NADIE</option>
-        <option value="OTRO">OTRO (rellenar abajo)</option>
+        <option value="OTRO">OTRO</option>
       </select>
       <input type="text" name="COMUNICARSE CON" placeholder="Especificar contacto" style="display:none;">
     </label>
 
-    <label>otros derechos:
+    <label>OTROS DERECHOS:
       <select name="OTROS DERECHOS" multiple size="3">
         <option value="MEDICO">MÉDICO</option>
         <option value="CONSULADO">CONSULADO</option>
         <option value="INTERPRETE">INTÉRPRETE</option>
       </select>
-      <small>Mantén Ctrl (PC) o Cmd (Mac) para seleccionar varios</small>
     </label>
 
     <button type="submit">Generar archivo</button>
@@ -168,19 +167,13 @@
   <div id="message"></div>
 
   <script>
-    // Mostrar/ocultar campos de texto cuando se selecciona "OTRO"
+    // Mostrar/ocultar inputs de "OTRO"
     document.querySelectorAll('select').forEach(select => {
       select.addEventListener('change', function() {
-        const label = this.closest('label');
-        const textInput = label.querySelector('input[type="text"]');
+        const textInput = this.closest('label').querySelector('input[type="text"]');
         if (textInput) {
-          if (this.value === 'OTRO') {
-            textInput.style.display = 'block';
-            textInput.focus();
-          } else {
-            textInput.style.display = 'none';
-            textInput.value = '';
-          }
+          textInput.style.display = (this.value === 'OTRO') ? 'block' : 'none';
+          if (this.value !== 'OTRO') textInput.value = '';
         }
       });
     });
@@ -191,104 +184,65 @@
 
     document.getElementById("registroForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-
       const formData = new FormData(e.target);
       const data = {};
 
-      // Procesar campos normales (que no tienen opciones especiales)
+      // Procesamos respuestas
       formData.forEach((value, key) => {
-        if (value && value.trim() !== "" && 
-            !key.includes("_OPCION") && 
-            !key.includes(" OTRO") &&
-            !key.includes("DOMICILIO") &&
-            !key.includes("TELÉFONO") &&
-            !key.includes("ABOGADO") &&
-            !key.includes("COMUNICARSE CON") &&
-            key !== "TIPO DOCUMENTO") {
-          
-          if (data[key]) {
-            data[key] += ", " + value.toUpperCase(); // multi-valores para OTROS DERECHOS
-          } else {
-            data[key] = value.toUpperCase();
-          }
+        if (value && value.trim() !== "" && !key.includes("OTRO") && !key.includes("_OPCION")) {
+          if (data[key]) data[key] += ", " + value.toUpperCase();
+          else data[key] = value.toUpperCase();
         }
       });
 
-      // Procesar campos con opciones especiales
-      // TIPO DOCUMENTO
-      const tipoDocSelect = formData.get("TIPO DOCUMENTO");
-      const tipoDocOtro = formData.get("TIPO DOCUMENTO OTRO");
-      if (tipoDocSelect === "OTRO" && tipoDocOtro) {
-        data["TIPO DOCUMENTO"] = tipoDocOtro.toUpperCase();
-      } else if (tipoDocSelect && tipoDocSelect !== "OTRO") {
-        data["TIPO DOCUMENTO"] = tipoDocSelect.toUpperCase();
-      }
+      // Campos especiales (domicilio, teléfono, abogado, comunicar, tipo documento)
+      const tipoDoc = formData.get("TIPO DOCUMENTO") === "OTRO" ? formData.get("TIPO DOCUMENTO OTRO") : formData.get("TIPO DOCUMENTO");
+      if (tipoDoc) data["TIPO DOCUMENTO"] = tipoDoc.toUpperCase();
+      const domicilio = formData.get("DOMICILIO_OPCION") === "OTRO" ? formData.get("DOMICILIO") : formData.get("DOMICILIO_OPCION");
+      if (domicilio) data["DOMICILIO"] = domicilio.toUpperCase();
+      const tel = formData.get("TELÉFONO_OPCION") === "OTRO" ? formData.get("TELÉFONO") : formData.get("TELÉFONO_OPCION");
+      if (tel) data["TELÉFONO"] = tel.toUpperCase();
+      const abo = formData.get("ABOGADO_OPCION") === "OTRO" ? formData.get("ABOGADO") : formData.get("ABOGADO_OPCION");
+      if (abo) data["ABOGADO"] = abo.toUpperCase();
+      const com = formData.get("COMUNICARSE CON_OPCION") === "OTRO" ? formData.get("COMUNICARSE CON") : formData.get("COMUNICARSE CON_OPCION");
+      if (com) data["COMUNICARSE CON:"] = com.toUpperCase();
 
-      // DOMICILIO
-      const domicilioSelect = formData.get("DOMICILIO_OPCION");
-      const domicilioOtro = formData.get("DOMICILIO");
-      if (domicilioSelect === "OTRO" && domicilioOtro) {
-        data["DOMICILIO"] = domicilioOtro.toUpperCase();
-      } else if (domicilioSelect && domicilioSelect !== "OTRO") {
-        data["DOMICILIO"] = domicilioSelect.toUpperCase();
-      }
+      // Forzar todas las columnas aunque estén vacías
+      const headers = [
+        "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
+        "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
+        "DELITO","C.P. AGENTES","DILIGENCIAS","LUGAR DEL HECHO","LUGAR DE LA DETENCIÓN",
+        "HORA DEL HECHO","HORA DE LA DETENCIÓN","BREVE RESUMEN DE LOS HECHOS",
+        "INDICIOS POR LOS QUE SE DETIENE","ABOGADO","COMUNICARSE CON:","OTROS DERECHOS"
+      ];
+      const row = {};
+      headers.forEach(h => row[h] = data[h] || "");
 
-      // TELÉFONO
-      const telefonoSelect = formData.get("TELÉFONO_OPCION");
-      const telefonoOtro = formData.get("TELÉFONO");
-      if (telefonoSelect === "OTRO" && telefonoOtro) {
-        data["TELÉFONO"] = telefonoOtro.toUpperCase();
-      } else if (telefonoSelect && telefonoSelect !== "OTRO") {
-        data["TELÉFONO"] = telefonoSelect.toUpperCase();
-      }
-
-      // ABOGADO
-      const abogadoSelect = formData.get("ABOGADO_OPCION");
-      const abogadoOtro = formData.get("ABOGADO");
-      if (abogadoSelect === "OTRO" && abogadoOtro) {
-        data["ABOGADO"] = abogadoOtro.toUpperCase();
-      } else if (abogadoSelect && abogadoSelect !== "OTRO") {
-        data["ABOGADO"] = abogadoSelect.toUpperCase();
-      }
-
-      // COMUNICARSE CON
-      const comunicarSelect = formData.get("COMUNICARSE CON_OPCION");
-      const comunicarOtro = formData.get("COMUNICARSE CON");
-      if (comunicarSelect === "OTRO" && comunicarOtro) {
-        data["COMUNICARSE CON:"] = comunicarOtro.toUpperCase();
-      } else if (comunicarSelect && comunicarSelect !== "OTRO") {
-        data["COMUNICARSE CON:"] = comunicarSelect.toUpperCase();
-      }
-
-      // Crear workbook
+      // Crear Excel
+      const ws = XLSX.utils.json_to_sheet([row], { header: headers });
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet([data]);
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
 
-      // Exportar como binario
       const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
       const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
       try {
-        // Crear ZIP cifrado con contraseña "americas"
+        // ZIP con contraseña fija "americas"
         const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
-          password: "americas", // 🔑 contraseña "americas"
-          encryptionStrength: 3 // AES‑256
+          password: "americas",
+          encryptionStrength: 3
         });
         await writer.add("DETENIDO.xlsx", new zip.BlobReader(blob));
         const zipBlob = await writer.close();
 
-        // Descargar
         saveAs(zipBlob, "DETENIDO.zip");
-        showMessage(`✅ Archivo "DETENIDO.zip" generado y descargado.\nProtegido con contraseña: americas`);
-      } catch (error) {
-        console.error('Error al crear ZIP:', error);
-        showMessage(`❌ Error al generar el archivo cifrado.\nIntentando descarga sin cifrar...`);
-        
-        // Fallback: descargar Excel sin cifrar si falla el ZIP
+        showMessage("✅ Archivo 'DETENIDO.zip' generado.\nProtegido con contraseña: americas");
+      } catch (e) {
         saveAs(blob, "DETENIDO.xlsx");
+        showMessage("⚠️ ZIP cifrado no soportado. Se descargó Excel sin proteger.");
       }
     });
   </script>
 </body>
 </html>
+
