@@ -7,12 +7,13 @@
   <link rel="manifest" href="manifest.json">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Librería zip.js con soporte de cifrado -->
+  <script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
     h1 { text-align: center; }
     form { background: white; padding: 20px; border-radius: 8px;
-           max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+           box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
     label { display: block; margin-top: 10px; }
     input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; }
     button { margin-top: 20px; padding: 10px; background: #4285f4; color: white;
@@ -25,7 +26,7 @@
   <h1>Registro de Detenidos</h1>
   <form id="registroForm">
     <label>TIPO DOCUMENTO:
-      <select name="TIPO DOCUMENTO" required>
+      <select name="TIPO DOCUMENTO">
         <option value="DNI">DNI</option>
         <option value="NIE">NIE</option>
         <option value="INDOCUMENTADO">INDOCUMENTADO</option>
@@ -34,17 +35,17 @@
       <input type="text" name="TIPO DOCUMENTO OTRO" placeholder="Otro">
     </label>
 
-    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO" required></label>
+    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO"></label>
     <label>SEXO:
-      <select name="SEXO" required>
+      <select name="SEXO">
         <option value="MASCULINO">MASCULINO</option>
         <option value="FEMENINO">FEMENINO</option>
       </select>
     </label>
-    <label>Nombre: <input type="text" name="Nombre" required></label>
-    <label>APELLIDOS: <input type="text" name="APELLIDOS" required></label>
+    <label>Nombre: <input type="text" name="Nombre"></label>
+    <label>APELLIDOS: <input type="text" name="APELLIDOS"></label>
     <label>Nombre de los Padres: <input type="text" name="Nombre de los Padres"></label>
-    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
+    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO"></label>
     <label>LUGAR DE NACIMIENTO: <input type="text" name="LUGAR DE NACIMIENTO"></label>
     <label>NACIONALIDAD: <input type="text" name="NACIONALIDAD"></label>
 
@@ -69,8 +70,8 @@
     <label>DILIGENCIAS: <input type="text" name="DILIGENCIAS"></label>
     <label>LUGAR DEL HECHO: <input type="text" name="LUGAR DEL HECHO"></label>
     <label>LUGAR DE LA DETENCIÓN: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
-    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
-    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
+    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO"></label>
+    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN"></label>
     <label>BREVE RESUMEN DE LOS HECHOS:
       <textarea name="BREVE RESUMEN DE LOS HECHOS"></textarea>
     </label>
@@ -95,7 +96,7 @@
     </label>
 
     <label>OTROS DERECHOS:
-      <select name="OTROS DERECHOS" multiple>
+      <select name="OTROS DERECHOS" multiple size="3">
         <option value="MEDICO">MÉDICO</option>
         <option value="CONSULADO">CONSULADO</option>
         <option value="INTERPRETE">INTÉRPRETE</option>
@@ -118,24 +119,34 @@
       const data = {};
       new FormData(e.target).forEach((value, key) => {
         if (value && value.trim() !== "") {
-          data[key] = value.toUpperCase(); // todas respuestas en MAYÚSCULAS
+          if (data[key]) {
+            data[key] += ", " + value.toUpperCase(); // multi-valores
+          } else {
+            data[key] = value.toUpperCase();
+          }
         }
       });
 
+      // Crear workbook
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet([data]);
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
 
+      // Exportar como binario
       const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 
-      const zip = new JSZip();
-      // ⚠️ PROTEGIDO CON CONTRASEÑA para el archivo interno
-      zip.file("DETENIDO.xlsx", new Uint8Array(wbout), {compression: "DEFLATE", password: "CLAVE123"});
-
-      zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function(zipBlob) {
-        saveAs(zipBlob, "DETENIDO.zip");
-        showMessage(`✅ Archivo "DETENIDO.zip" generado y descargado.\nProtegido con contraseña.`);
+      // Crear ZIP cifrado
+      const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
+        password: "CLAVE123", // 🔑 contraseña fija, cámbiala aquí
+        encryptionStrength: 3 // AES‑256
       });
+      await writer.add("DETENIDO.xlsx", new zip.BlobReader(blob));
+      const zipBlob = await writer.close();
+
+      // Descargar
+      saveAs(zipBlob, "DETENIDO.zip");
+      showMessage(`✅ Archivo "DETENIDO.zip" generado y descargado.\nProtegido con contraseña.`);
     });
   </script>
 </body>
