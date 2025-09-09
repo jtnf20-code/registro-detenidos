@@ -17,7 +17,7 @@
     body {
       font-family: 'Comfortaa', sans-serif; 
       margin: 20px;
-      background: #f4f4f9; /* Fondo neutro detrás del formulario */
+      background: #f4f4f9;
     }
     h1 { 
       text-align: center; 
@@ -77,6 +77,26 @@
       font-weight: bold; 
       text-align: center; 
       white-space: pre-line;
+    }
+    
+    /* Estilos para checkboxes */
+    .checkbox-group {
+      margin-top: 8px;
+      margin-left: 10px;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 1em;
+      text-transform: none;
+      color: #ffffff;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+      margin-top: 0;
+      transform: scale(1.2);
     }
   </style>
 </head>
@@ -153,13 +173,11 @@
       <input type="text" name="COMUNICARSE CON" placeholder="Especificar contacto" style="display:none;">
     </label>
 
-    <label>OTROS DERECHOS:
-      <select name="OTROS DERECHOS" multiple size="3">
-        <option value="MEDICO">MÉDICO</option>
-        <option value="CONSULADO">CONSULADO</option>
-        <option value="INTERPRETE">INTÉRPRETE</option>
-      </select>
-    </label>
+    <label>OTROS DERECHOS:</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="OTROS DERECHOS" value="MEDICO"> MÉDICO</label>
+      <label><input type="checkbox" name="OTROS DERECHOS" value="CONSULADO"> CONSULADO</label>
+    </div>
 
     <label>INTÉRPRETE:
       <select name="INTERPRETE_OPCION">
@@ -175,6 +193,7 @@
   <div id="message"></div>
 
   <script>
+    // Mostrar/ocultar input si elige "OTRO"
     document.querySelectorAll('select').forEach(select => {
       select.addEventListener('change', function() {
         const textInput = this.closest('label').querySelector('input[type="text"]');
@@ -194,36 +213,42 @@
       const formData = new FormData(e.target);
       const data = {};
 
+      // Selects con "OTRO" o valor por defecto
       const tipoDoc = formData.get("TIPO DOCUMENTO_OPCION") === "OTRO" ? formData.get("TIPO DOCUMENTO") : formData.get("TIPO DOCUMENTO_OPCION");
-      data["TIPO DOCUMENTO"] = tipoDoc.toUpperCase();
+      data["TIPO DOCUMENTO"] = (tipoDoc || "DNI").toUpperCase();
 
-      data["SEXO"] = formData.get("SEXO_OPCION").toUpperCase();
+      data["SEXO"] = (formData.get("SEXO_OPCION") || "MASCULINO").toUpperCase();
 
       const domicilio = formData.get("DOMICILIO_OPCION") === "OTRO" ? formData.get("DOMICILIO") : formData.get("DOMICILIO_OPCION");
-      data["DOMICILIO"] = domicilio.toUpperCase();
+      data["DOMICILIO"] = (domicilio || "NO APORTA").toUpperCase();
 
       const tel = formData.get("TELÉFONO_OPCION") === "OTRO" ? formData.get("TELÉFONO") : formData.get("TELÉFONO_OPCION");
-      data["TELÉFONO"] = tel.toUpperCase();
+      data["TELÉFONO"] = (tel || "NO APORTA").toUpperCase();
 
       const abo = formData.get("ABOGADO_OPCION") === "OTRO" ? formData.get("ABOGADO") : formData.get("ABOGADO_OPCION");
-      data["ABOGADO"] = abo.toUpperCase();
+      data["ABOGADO"] = (abo || "DE OFICIO").toUpperCase();
 
       const com = formData.get("COMUNICARSE CON_OPCION") === "OTRO" ? formData.get("COMUNICARSE CON") : formData.get("COMUNICARSE CON_OPCION");
-      data["COMUNICARSE CON:"] = com.toUpperCase();
+      data["COMUNICARSE CON:"] = (com || "NADIE").toUpperCase();
 
+      // INTÉRPRETE independiente
       const interpreteSel = formData.get("INTERPRETE_OPCION");
       const interpreteOtro = formData.get("INTERPRETE");
       data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? interpreteOtro.toUpperCase() : "NO";
 
-      const otros = formData.getAll("OTROS DERECHOS");
+      // OTROS DERECHOS (checkboxes)
+      const otros = [];
+      document.querySelectorAll('input[name="OTROS DERECHOS"]:checked').forEach(cb => otros.push(cb.value));
       data["OTROS DERECHOS"] = otros.length ? otros.map(v => v.toUpperCase()).join(", ") : "NINGUNO";
 
+      // Resto de campos libres
       formData.forEach((value, key) => {
-        if (value && value.trim() !== "" && !key.includes("_OPCION") && !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE"].includes(key)) {
+        if (value && value.trim() !== "" && !key.includes("_OPCION") && !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE","OTROS DERECHOS"].includes(key)) {
           data[key] = value.toUpperCase();
         }
       });
 
+      // Cabeceras fijas
       const headers = [
         "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
         "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
@@ -235,6 +260,7 @@
       const row = {};
       headers.forEach(h => row[h] = data[h] || "");
 
+      // Excel
       const ws = XLSX.utils.json_to_sheet([row], { header: headers });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Registro");
