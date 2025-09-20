@@ -84,6 +84,15 @@ input[type="time"] {
   width: 100px;   /* lo justo para HH:MM con espacio delante y detrás */
   text-align: center; /* centra el valor dentro del campo */
 }
+
+.field-card.small-width {
+  max-width: 160px !important; /* fuerza el ancho del globo */
+  flex: 0 0 160px !important;  /* no dejar que el flex de .grid-rows lo estire */
+}
+.field-card.small-width input[type="time"] {
+  width: 100%; 
+  text-align: center;
+}
 	  
   </style>
 
@@ -958,6 +967,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
 
 
