@@ -250,15 +250,26 @@ textarea {
       </div>
     </div>
 
-    <div class="actions">
-      
-<button onclick="cargarExcel()" style="background: #28a745; color: white; padding: .5rem 1rem; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-  📂 Cargar XLSX
-</button>
-      <button type="button" onclick="generarZipUnicoSeguro()">DESCARGA DE ZIP</button>
-    </div>
-    <div id="message"></div>
-  </form>
+   <div class="actions">
+  <!-- input oculto, debe ir dentro del form -->
+  <input type="file" id="fileInputXLSX" accept=".xlsx" style="display:none">
+
+  <!-- botón cargar excel -->
+  <button type="button"
+          onclick="cargarExcel()" 
+          style="background: #28a745; color: white; padding: .5rem 1rem; 
+                 border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+    📂 Cargar XLSX
+  </button>
+
+  <!-- botón descargar zip -->
+  <button type="button" onclick="generarZipUnicoSeguro()">
+    DESCARGA DE ZIP
+  </button>
+</div>
+
+<div id="message"></div>
+</form>
 
   <input type="file" id="fileInputXLSX" accept=".xlsx" style="display:none;">
 
@@ -932,6 +943,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
 
 
