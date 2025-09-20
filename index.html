@@ -122,7 +122,7 @@ textarea {
   </select>
   <input type="text" name="NOMBRE_PADRES" id="nombrePadresTexto" placeholder="Especificar" style="display:none;">
 </div>
-      <div class="field-card" style="color: lightblue;"><label>Fecha de nacimiento</label><input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></div>
+      <div class="field-card" style="color: lightblue;"><label>Fecha de nacimiento</label><input type="date" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></div>
       <div class="field-card" style="color: lightblue;"><label>Lugar de nacimiento</label><input type="text" name="LUGAR DE NACIMIENTO"></div>
       <div class="field-card" style="color: lightblue;">
         <label>Domicilio</label>
@@ -130,7 +130,7 @@ textarea {
           <option value="NO APORTA" selected>NO APORTA</option>
           <option value="OTRO">OTRO</option>
         </select>
-        <input type="text" name="DOMICILIO" maxlength="38" id="domicilioTexto" placeholder="Especificar" style="display:none;">
+        <input type="text" name="DOMICILIO" maxlength="45" id="domicilioTexto" placeholder="Especificar" style="display:none;">
       </div>
       <div class="field-card" style="color: lightblue;">
         <label>Teléfono</label>
@@ -138,7 +138,7 @@ textarea {
           <option value="NO APORTA" selected>NO APORTA</option>
           <option value="OTRO">OTRO</option>
         </select>
-        <input type="text" name="TELÉFONO" id="telefonoTexto" placeholder="Especificar" style="display:none;"></div>
+        <input type="tel" name="TELÉFONO" id="telefonoTexto" placeholder="Especificar" style="display:none;"></div>
       <div class="field-card" style="color: red;"><label>Fecha actual por defecto</label><input type="text" name="FECHA_GENERACION" id="fechaGeneracion"></div>
     </div>
 
@@ -182,7 +182,7 @@ textarea {
       <div class="field-card" style="color: lightgreen;"><label>Indicativo</label><input type="text" name="Indicativo" id="indicativotexto" placeholder="A-000"></div>
       <div class="field-card" style="color: lightgreen;"><label>C.P. Agentes</label><input type="text" name="C.P. AGENTES" id="agentestexto"></div>
       <div class="field-card" style="color: lightgreen;"><label>Diligencias</label><input type="text" name="DILIGENCIAS" id="diligenciatexto" placeholder="Pedir a GTD/ODAC ☏"></div>
-      <div class="field-card" style="color: lightgreen;"><label>Instructor</label><input type="text" name="INSTRUCTOR" id="instructortexto" placeholder="Pedir a GTD/ODAC ☏"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Instructor</label><input type="number" name="INSTRUCTOR" id="instructortexto" placeholder="Pedir a GTD/ODAC ☏"></div>
       <div class="field-card" style="color: lightgreen;"><label>Lugar del hecho</label><input type="text" name="LUGAR DEL HECHO"></div>
       <div class="field-card" style="color: lightgreen;"><label>Lugar de la detención</label><input type="text" name="LUGAR DE LA DETENCIÓN"></div>
       <div class="field-card" style="color: lightgreen;"><label>Hora del hecho</label><input type="time" name="HORA DEL HECHO" id="horaHecho"></div>
@@ -942,6 +942,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
 
 
