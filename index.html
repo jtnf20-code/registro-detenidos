@@ -122,7 +122,7 @@ textarea {
   </select>
   <input type="text" name="NOMBRE_PADRES" id="nombrePadresTexto" placeholder="Especificar" style="display:none;">
 </div>
-      <div class="field-card" style="color: lightblue;"><label>Fecha de nacimiento</label><input type="date" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></div>
+      <div class="field-card" style="color: lightblue;"><label>Fecha de nacimiento</label><input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></div>
       <div class="field-card" style="color: lightblue;"><label>Lugar de nacimiento</label><input type="text" name="LUGAR DE NACIMIENTO"></div>
       <div class="field-card" style="color: lightblue;">
         <label>Domicilio</label>
@@ -252,18 +252,29 @@ textarea {
 
 <div class="actions">
   <input type="file" id="fileInputXLSX" accept=".xlsx" style="display:none">
-  
-  <!-- Botón de DESCARGA DE ZIP (ahora el primero) -->
+
+  <!-- Botón DESCARGA ZIP (teal con icono) -->
   <button type="button" onclick="generarZipUnicoSeguro()" 
-          style="padding: .5rem 1rem; font-size: 16px; cursor: pointer; display: block; width: 100%; margin-bottom: 20px;">
-    DESCARGA DE ZIP
+          style="background: teal; color: white; padding: .5rem 1rem; font-size: 16px; 
+                 cursor: pointer; display: block; width: 100%; margin-bottom: 20px; 
+                 border: none; border-radius: 5px;">
+    🗂 Descarga de ZIP
   </button>
-  
-  <!-- Botón de CARGAR XLSX (ahora el segundo, verde y separado) -->
+
+  <!-- Botón CARGAR XLSX (verde con icono de carpeta) -->
   <button type="button" onclick="cargarExcel()" 
-          style="background: #28a745; color: white; padding: .5rem 1rem; 
-                 border: none; border-radius: 5px; font-size: 16px; cursor: pointer; display: block; width: 100%;">
+          style="background: #28a745; color: white; padding: .5rem 1rem; font-size: 16px; 
+                 cursor: pointer; display: block; width: 100%; margin-bottom: 20px; 
+                 border: none; border-radius: 5px;">
     📂 Cargar XLSX
+  </button>
+
+  <!-- Botón REFRESCAR (azul con icono de recarga) -->
+  <button type="button" onclick="location.reload();" 
+          style="background: #007bff; color: white; padding: .5rem 1rem; font-size: 16px; 
+                 cursor: pointer; display: block; width: 100%; 
+                 border: none; border-radius: 5px;">
+    🔄 Refrescar
   </button>
 </div>
 
@@ -942,6 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
 
 
