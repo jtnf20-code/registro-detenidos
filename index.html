@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
   <link rel="manifest" href="manifest.json">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -874,5 +876,34 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 </script>
 
+<style>
+  body {
+    font-family: sans-serif;
+    padding: 10px;
+    margin: 0;
+  }
+  .field-card {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .field-card label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: .25rem;
+  }
+  .field-card input, .field-card select, .field-card textarea {
+    width: 100%;
+    padding: .5rem;
+    box-sizing: border-box;
+    font-size: 16px; /* para que en iOS no haga zoom raro */
+  }
+  button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 18px;
+  }
+</style>
+
 </body>
 </html>
+
