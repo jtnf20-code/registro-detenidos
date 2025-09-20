@@ -1,287 +1,878 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro de Detenidos</title>
+
   <link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Fuente Comfortaa -->
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Detenidos - Formato Completo Offline</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="https://gildas-lormeau.github.io/zip.js/demos/lib/zip.min.js"></script>
+  <!-- Librerías necesarias -->
+  <script src="./jszip.min.js"></script>
+  <script src="./FileSaver.min.js"></script>
+  <script src="xlsx.full.min.js"></script>
 
+  <!-- Plantillas Base64: deben definir window.PLANTILLAS con claves:
+       { amarillas, azules, fax, derechos_ingles, derechos_espanol } -->
+  <script src="./plantilla_amarillas.js"></script>
+  <script src="./plantilla_azules.js"></script>
+  <script src="./plantilla_fax.js"></script>
+  <script src="./plantilla_derechos_ingles.js"></script>
+  <script src="./plantilla_derechos_espanol.js"></script>
+  <script src="./plantilla_derechos_arabe.js"></script>
+  <script src="./plantilla_derechos_italiano.js"></script>
+  <script src="./plantilla_derechos_ruso.js"></script>
   <style>
-    body {
-      font-family: 'Comfortaa', sans-serif; 
-      margin: 20px;
-      background: #f4f4f9;
+    :root { --primary:#3498db; --hover:#2980b9; --panel:rgba(0,0,0,0.75); --text:#fff; --field-bg:rgba(255,255,255,0.9); --border:#aaa; --radius:12px; --space:16px; --card-pad:14px; }
+    *{box-sizing:border-box}
+    body{margin:0;padding:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:url('fondo.jpg') no-repeat center center fixed;background-size:cover;min-height:100vh;display:flex;flex-direction:column;justify-content:center;}
+    h1{text-align:center;margin:16px 0 20px;font-size:32px;font-weight:800;color:#fff;text-transform:uppercase;text-shadow:2px 2px 8px rgba(0,0,0,.7);}
+    form{background:var(--panel);color:var(--text);border-radius:var(--radius);max-width:1400px;margin:0 auto 32px;padding:28px 32px;box-shadow:0 10px 28px rgba(0,0,0,.6);}
+    h2{font-size:20px;text-transform:uppercase;margin-top:28px;margin-bottom:12px;border-bottom:2px solid var(--primary);padding-bottom:6px;letter-spacing:.5px;}
+    .grid-rows{display:grid;grid-gap:var(--space);grid-template-columns: repeat(3, minmax(280px,1fr));}
+    @media(max-width:1200px){.grid-rows{grid-template-columns:repeat(2,minmax(280px,1fr));}}
+    @media(max-width:700px){.grid-rows{grid-template-columns:1fr;}}
+    .field-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:var(--card-pad);display:flex;flex-direction:column;gap:8px;min-height:94px;}
+    label{font-weight:700;font-size:12px;margin-bottom:2px;text-transform:uppercase;letter-spacing:.6px;}
+    input,select,textarea{width:100%;padding:5px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--field-bg);color:#000;}
+    textarea{resize:vertical;min-height:56px;}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(52,152,219,.25);}
+    .actions{text-align:center;margin-top:26px;}
+    button{background:var(--primary);color:#fff;padding:14px 26px;border:none;border-radius:10px;font-weight:800;font-size:15px;text-transform:uppercase;cursor:pointer;letter-spacing:.6px;}
+    button:hover{background:var(--hover);}
+    #message{margin-top:12px;text-align:center;font-weight:bold;color:#fff;}
+.full-width {
+      grid-column: span 3;
     }
-    h1 { 
-      text-align: center; 
-      text-transform: uppercase;
-      color: #2c3e50;
-      font-size: 2.2em;
-      margin-bottom: 30px;
-    }
-    form {
-      background: url('fondo.jpg') center/cover no-repeat;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      max-width: 650px;
-      margin: auto;
-    }
-    label { 
-      display: block; 
-      margin-top: 15px; 
-      text-transform: uppercase;
-      color: #ffffff;
-      font-size: 1.1em;
-    }
-    input, select, textarea { 
-      width: 100%; 
-      padding: 10px; 
-      margin-top: 6px; 
-      font-family: 'Comfortaa', sans-serif;
-      font-weight: 400;
-      border: 2px solid #ffffff80;
-      border-radius: 5px;
-      background-color: rgba(255,255,255,0.9);
-      font-size: 14px;
-      color: #000;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-    button { 
-      margin-top: 25px; 
-      padding: 12px; 
-      background: #3498db; 
-      color: white;
-      border: none; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      width: 100%;
-      font-family: 'Comfortaa', sans-serif;
-      font-weight: 700;
-      font-size: 16px;
-      text-transform: uppercase;
-    }
-    button:hover { background: #2980b9; }
-    #message { 
-      margin-top: 20px; 
-      font-weight: bold; 
-      text-align: center; 
-      white-space: pre-line;
-    }
-    
-    /* Estilos para checkboxes */
-    .checkbox-group {
-      margin-top: 8px;
-      margin-left: 10px;
-    }
-    .checkbox-group label {
-      display: flex;
-      align-items: center;
-      margin-top: 8px;
-      font-size: 1em;
-      text-transform: none;
-      color: #ffffff;
-    }
-    .checkbox-group input[type="checkbox"] {
-      width: auto;
-      margin-right: 10px;
-      margin-top: 0;
-      transform: scale(1.2);
-    }
+/* Reduce la altura por defecto de todas las tarjetas */
+.field-card {
+  padding: 10px;        /* antes var(--card-pad)=14px */
+  gap: 6px;             /* antes 8px */
+  min-height: 64px;     /* antes 94px */
+}
+textarea {
+  min-height: 34px;     /* altura visible del textarea */
+}
   </style>
+
 </head>
 <body>
   <h1>Registro de Detenidos</h1>
-  <form id="registroForm">
-    <label>TIPO DOCUMENTO:
-      <select name="TIPO DOCUMENTO_OPCION">
-        <option value="DNI" selected>DNI</option>
-        <option value="NIE">NIE</option>
-        <option value="INDOCUMENTADO">INDOCUMENTADO</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="TIPO DOCUMENTO" placeholder="Especificar otro" style="display:none;">
-    </label>
 
-    <label>NºDOCUMENTO: <input type="text" name="NºDOCUMENTO"></label>
-    <label>SEXO:
-      <select name="SEXO_OPCION">
-        <option value="MASCULINO" selected>MASCULINO</option>
-        <option value="FEMENINO">FEMENINO</option>
-      </select>
-    </label>
-    <label>NOMBRE: <input type="text" name="Nombre"></label>
-    <label>APELLIDOS: <input type="text" name="APELLIDOS"></label>
-    <label>NOMBRE DE LOS PADRES: <input type="text" name="Nombre de los Padres"></label>
-    <label>FECHA DE NACIMIENTO: <input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></label>
-    <label>LUGAR DE NACIMIENTO: <input type="text" name="LUGAR DE NACIMIENTO"></label>
-    <label>NACIONALIDAD: <input type="text" name="NACIONALIDAD"></label>
-
-    <label>DOMICILIO:
-      <select name="DOMICILIO_OPCION">
-        <option value="NO APORTA" selected>NO APORTA</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="DOMICILIO" placeholder="Especificar domicilio" style="display:none;">
-    </label>
-
-    <label>TELÉFONO:
-      <select name="TELÉFONO_OPCION">
-        <option value="NO APORTA" selected>NO APORTA</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="TELÉFONO" placeholder="Especificar teléfono" style="display:none;">
-    </label>
-
-    <label>DELITO: <input type="text" name="DELITO"></label>
-    <label>C.P. AGENTES: <input type="text" name="C.P. AGENTES"></label>
-    <label>DILIGENCIAS: <input type="text" name="DILIGENCIAS"></label>
-    <label>LUGAR DEL HECHO: <input type="text" name="LUGAR DEL HECHO"></label>
-    <label>LUGAR DE LA DETENCIÓN: <input type="text" name="LUGAR DE LA DETENCIÓN"></label>
-    <label>HORA DEL HECHO: <input type="text" name="HORA DEL HECHO" placeholder="HH:MM"></label>
-    <label>HORA DE LA DETENCIÓN: <input type="text" name="HORA DE LA DETENCIÓN" placeholder="HH:MM"></label>
-    <label>BREVE RESUMEN DE LOS HECHOS:
-      <textarea name="BREVE RESUMEN DE LOS HECHOS" rows="3"></textarea>
-    </label>
-    <label>INDICIOS POR LOS QUE SE DETIENE:
-      <textarea name="INDICIOS POR LOS QUE SE DETIENE" rows="3"></textarea>
-    </label>
-
-    <label>ABOGADO:
-      <select name="ABOGADO_OPCION">
-        <option value="DE OFICIO" selected>DE OFICIO</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="ABOGADO" placeholder="Especificar abogado" style="display:none;">
-    </label>
-
-    <label>COMUNICARSE CON:
-      <select name="COMUNICARSE CON_OPCION">
-        <option value="NADIE" selected>NADIE</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="COMUNICARSE CON" placeholder="Especificar contacto" style="display:none;">
-    </label>
-
-    <label>OTROS DERECHOS:</label>
-    <div class="checkbox-group">
-      <label><input type="checkbox" name="OTROS DERECHOS" value="MEDICO"> MÉDICO</label>
-      <label><input type="checkbox" name="OTROS DERECHOS" value="CONSULADO"> CONSULADO</label>
+  <form id="registroForm" autocomplete="off">
+    <h2>Datos de Filiación</h2>
+    <div class="grid-rows">
+      <div class="field-card" style="color: lightblue;">
+        <label>Tipo Documento</label>
+        <select name="TIPO DOCUMENTO_OPCION" id="tipoDocumento">
+          <option value="INDOCUMENTADO/A" selected>INDOCUMENTADO/A</option>
+          <option value="DNI">DNI</option>
+          <option value="NIE">NIE</option>
+          <option value="PASAPORTE">PASAPORTE</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+        <input type="text" name="TIPO DOCUMENTO" id="tipoDocumentoOtro" placeholder="Especificar otro" style="display:none;">
+      </div>
+      <div class="field-card" style="color: lightblue;">
+        <label>Nº Documento</label>
+        <input type="text" name="NºDOCUMENTO" id="numeroDocumento">
+      </div>
+      <div class="field-card" style="color: lightblue;">
+        <label>Sexo</label>
+        <select name="SEXO_OPCION" id="sexoOpcion">
+          <option value="MASCULINO" selected>MASCULINO</option>
+          <option value="FEMENINO">FEMENINO</option>
+        </select>
+      </div>
+      <div class="field-card" style="color: lightblue;"><label>Nacionalidad</label><input type="text" name="NACIONALIDAD" id="nacionalidadtexto" placeholder="País"></div>
+      <div class="field-card" style="color: lightblue;"><label>Nombre</label><input type="text" name="Nombre" id="Nombre"></div>
+      <div class="field-card" style="color: lightblue;"><label>Apellidos</label><input type="text" name="APELLIDOS" id="APELLIDOS"></div>
+     <div class="field-card" style="color: lightblue;">
+  <label>Nombre de los Padres</label>
+  <select name="NOMBRE_PADRES_OPCION" id="nombrePadresOpcion">
+    <option value="NO APORTA" selected>NO APORTA</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <input type="text" name="NOMBRE_PADRES" id="nombrePadresTexto" placeholder="Especificar" style="display:none;">
+</div>
+      <div class="field-card" style="color: lightblue;"><label>Fecha de nacimiento</label><input type="text" name="FECHA DE NACIMIENTO" placeholder="DD/MM/AAAA"></div>
+      <div class="field-card" style="color: lightblue;"><label>Lugar de nacimiento</label><input type="text" name="LUGAR DE NACIMIENTO"></div>
+      <div class="field-card" style="color: lightblue;">
+        <label>Domicilio</label>
+        <select name="DOMICILIO_OPCION" id="domicilioOpcion">
+          <option value="NO APORTA" selected>NO APORTA</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+        <input type="text" name="DOMICILIO" id="domicilioTexto" placeholder="Especificar" style="display:none;">
+      </div>
+      <div class="field-card" style="color: lightblue;">
+        <label>Teléfono</label>
+        <select name="TELÉFONO_OPCION" id="telefonoOpcion">
+          <option value="NO APORTA" selected>NO APORTA</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+        <input type="text" name="TELÉFONO" id="telefonoTexto" placeholder="Especificar" style="display:none;"></div>
+      <div class="field-card" style="color: red;"><label>Fecha actual por defecto</label><input type="text" name="FECHA_GENERACION" id="fechaGeneracion"></div>
     </div>
 
-    <label>INTÉRPRETE:
-      <select name="INTERPRETE_OPCION">
-        <option value="NO" selected>NO</option>
-        <option value="OTRO">OTRO</option>
-      </select>
-      <input type="text" name="INTERPRETE" placeholder="Especificar idioma" style="display:none;">
-    </label>
 
-    <button type="submit">Generar archivo</button>
+    <h2>Hechos</h2>
+    <div class="grid-rows">
+      <div class="field-card" style="color: green;">
+  <label>Delito(s)</label>
+  <select id="delitoSelect">
+    <option value="">-- Seleccionar --</option>
+    <option value="HURTO">HURTO</option>
+    <option value="DAÑOS">DAÑOS</option>
+    <option value="ESTAFA">ESTAFA</option>
+    <option value="ROBO CON FUERZA">ROBO CON FUERZA</option>
+    <option value="ROBO USO DE VEHICULO">ROBO USO DE VEHÍCULO</option>
+    <option value="HURTO USO DE VEHICULO">HURTO USO DE VEHÍCULO</option>
+    <option value="ROBO CON VIOLENCIA">ROBO CON VIOLENCIA</option>
+    <option value="LESIONES">LESIONES</option>
+    <option value="AMENAZAS GRAVES">AMENAZAS GRAVES</option>
+    <option value="MALOS TRATOS EN EL ÁMBITO FAMILIAR">MALOS TRATOS EN EL ÁMBITO FAMILIAR</option>
+    <option value="ABUSO SEXUAL">ABUSO SEXUAL</option>
+    <option value="ATENTADO AGENTE AUTORIDAD">ATENTADO AGENTE AUTORIDAD</option>
+    <option value="DESOBEDIENCIA">DESOBEDIENCIA</option>
+    <option value="CONTRA LA SEGURIDAD VIAL">CONTRA LA SEGURIDAD VIAL</option>
+    <option value="CONTRA LA SALUD PÚBLICA">CONTRA LA SALUD PÚBLICA</option>
+    <option value="TRÁFICO DE DROGAS">TRÁFICO DE DROGAS</option>
+    <option value="FALSEDAD DOCUMENTAL">FALSEDAD DOCUMENTAL</option>
+    <option value="RECLAMACIÓN JUDICIAL">RECLAMACIÓN JUDICIAL</option>
+    <option value="QUEBRANTAMIENTO DE CONDENA">QUEBRANTAMIENTO DE CONDENA</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+
+  <!-- input para OTRO -->
+  <input type="text" id="delitoOtroTexto" placeholder="Especificar" style="display:none;">
+
+  <!-- sub-globo inferior -->
+  <div id="delitosSeleccionados" style="margin-top:8px; padding:5px; border:1px solid #ccc; min-height:30px;">
+    <em>Ningún delito seleccionado</em>
+  </div>
+</div>
+      <div class="field-card" style="color: lightgreen;"><label>Indicativo</label><input type="text" name="Indicativo" id="indicativotexto" placeholder="A-000"></div>
+      <div class="field-card" style="color: lightgreen;"><label>C.P. Agentes</label><input type="text" name="C.P. AGENTES" id="agentestexto"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Diligencias</label><input type="text" name="DILIGENCIAS" id="diligenciatexto" placeholder="Pedir a GTD/ODAC ☏"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Instructor</label><input type="text" name="INSTRUCTOR" id="instructortexto" placeholder="Pedir a GTD/ODAC ☏"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Lugar del hecho</label><input type="text" name="LUGAR DEL HECHO"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Lugar de la detención</label><input type="text" name="LUGAR DE LA DETENCIÓN"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Hora del hecho</label><input type="time" name="HORA DEL HECHO" id="horaHecho"></div>
+      <div class="field-card" style="color: lightgreen;"><label>Hora de la detención</label><input type="time" name="HORA DE LA DETENCIÓN" id="horaDetencion"></div>
+      <div class="field-card full-width" style="color: lightgreen;">
+  <label>Breve resumen de los hechos</label><textarea name="BREVE RESUMEN DE LOS HECHOS" id="brevetexto" placeholder="Ej: Autor de agresión con arma blanca..."></textarea>
+</div>
+
+<div class="field-card full-width" style="color: lightgreen;">
+  <label>Indicios por los que se detiene</label><textarea name="INDICIOS POR LOS QUE SE DETIENE" id="indiciostexto" placeholder="Ej: Manifestaciones perjudicado, testigos..."></textarea>
+</div>
+	</div>
+    <h2>Derechos</h2>
+    <div class="grid-rows">
+      <div class="field-card" style="color: orange;">
+        <label>Abogado</label>
+        <select name="ABOGADO_OPCION" id="abogadoOpcion">
+          <option value="DE OFICIO" selected>DE OFICIO</option>
+          <option value="OTRO">PARTICULAR</option>
+        </select>
+        <input type="text" name="ABOGADO" id="abogadoTexto" placeholder="Nombre y teléfono" style="display:none;">
+      </div>
+      <div class="field-card" style="color: orange;">
+        <label>Comunicarse con</label>
+        <select name="COMUNICARSE CON_OPCION" id="comunicarseOpcion">
+          <option value="NADIE" selected>NADIE</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+        <input type="text" name="COMUNICARSE CON:" id="comunicarseTexto" placeholder="Nombre y teléfono" style="display:none;">
+      </div>
+      <div class="field-card" style="color: orange;">
+        <label>Informar de su detención a:</label>
+        <select name="INFORMAR DE SU DETENCIÓN_OPCION" id="informardeOpcion">
+          <option value="NADIE" selected>NADIE</option>
+          <option value="OTRO">OTRO</option>
+        </select>
+        <input type="text" name="INFORMAR DE SU DETENCION A:" id="informardeTexto" placeholder="Nombre y teléfono" style="display:none;">
+      </div>
+
+      <div class="field-card" style="color: orange;">
+  <label>Intérprete</label>
+  <select name="INTERPRETE_OPCION" id="interpreteOpcion">
+    <option value="NO" selected>NO</option>
+    <option value="INGLÉS">INGLÉS</option>
+    <option value="ÁRABE">ÁRABE</option>
+    <option value="ITALIANO">ITALIANO</option>
+    <option value="RUSO">RUSO</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <input type="text" name="IDIOMA" id="idioma" placeholder="Especificar idioma/contexto" style="display:none;">
+</div>
+      <div class="field-card" style="color: orange;">
+        <label>Médico</label>
+        <select name="MEDICO" id="medico">
+          <option value="NO" selected>NO</option>
+          <option value="SI">SI</option>
+        </select>
+      </div>
+      <div class="field-card" style="color: orange;">
+        <label>Consulado</label>
+        <select name="CONSULADO" id="consulado">
+          <option value="NO" selected>NO</option>
+          <option value="SI">SI</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" onclick="cargarExcel()">📂 Cargar XLSX</button>
+      <button type="button" onclick="generarZipUnicoSeguro()">DESCARGA DE ZIP</button>
+    </div>
+    <div id="message"></div>
   </form>
 
-  <div id="message"></div>
+  <input type="file" id="fileInputXLSX" accept=".xlsx" style="display:none;">
 
   <script>
-    // Mostrar/ocultar input si elige "OTRO"
-    document.querySelectorAll('select').forEach(select => {
-      select.addEventListener('change', function() {
-        const textInput = this.closest('label').querySelector('input[type="text"]');
-        if (textInput) {
-          textInput.style.display = (this.value === 'OTRO') ? 'block' : 'none';
-          if (this.value !== 'OTRO') textInput.value = '';
-        }
-      });
-    });
-
-    function showMessage(msg) {
-      document.getElementById("message").innerText = msg;
+    // Helpers
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+    function buildFlexibleRegex(key){
+      const chars = key.split("").map(c=>escapeRegExp(c));
+      const flexible = chars.join("(?:\\s|<[^>]+>|&nbsp;)*");
+      return new RegExp("\\{\\{(?:\\s|<[^>]+>|&nbsp;)*"+flexible+"(?:\\s|<[^>]+>|&nbsp;)*\\}\\}","gi");
     }
+    function toAsciiFileName(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ñ/gi,'n').replace(/[^A-Za-z0-9._-]+/g,'_');}
+    function xmlEscape(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function sanitizeForFilename(s){return String(s||'').replace(/[\/\\:*?"<>|]+/g,' ').trim();}
+    function U(s){ return String(s ?? '').toUpperCase(); } // MAYÚSCULAS
 
-    document.getElementById("registroForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = {};
-
-      // Selects con "OTRO" o valor por defecto
-      const tipoDoc = formData.get("TIPO DOCUMENTO_OPCION") === "OTRO" ? formData.get("TIPO DOCUMENTO") : formData.get("TIPO DOCUMENTO_OPCION");
-      data["TIPO DOCUMENTO"] = (tipoDoc || "DNI").toUpperCase();
-
-      data["SEXO"] = (formData.get("SEXO_OPCION") || "MASCULINO").toUpperCase();
-
-      const domicilio = formData.get("DOMICILIO_OPCION") === "OTRO" ? formData.get("DOMICILIO") : formData.get("DOMICILIO_OPCION");
-      data["DOMICILIO"] = (domicilio || "NO APORTA").toUpperCase();
-
-      const tel = formData.get("TELÉFONO_OPCION") === "OTRO" ? formData.get("TELÉFONO") : formData.get("TELÉFONO_OPCION");
-      data["TELÉFONO"] = (tel || "NO APORTA").toUpperCase();
-
-      const abo = formData.get("ABOGADO_OPCION") === "OTRO" ? formData.get("ABOGADO") : formData.get("ABOGADO_OPCION");
-      data["ABOGADO"] = (abo || "DE OFICIO").toUpperCase();
-
-      const com = formData.get("COMUNICARSE CON_OPCION") === "OTRO" ? formData.get("COMUNICARSE CON") : formData.get("COMUNICARSE CON_OPCION");
-      data["COMUNICARSE CON:"] = (com || "NADIE").toUpperCase();
-
-      // INTÉRPRETE independiente
-      const interpreteSel = formData.get("INTERPRETE_OPCION");
-      const interpreteOtro = formData.get("INTERPRETE");
-      data["INTERPRETE"] = (interpreteSel === "OTRO" && interpreteOtro) ? interpreteOtro.toUpperCase() : "NO";
-
-      // OTROS DERECHOS (checkboxes)
-      const otros = [];
-      document.querySelectorAll('input[name="OTROS DERECHOS"]:checked').forEach(cb => otros.push(cb.value));
-      data["OTROS DERECHOS"] = otros.length ? otros.map(v => v.toUpperCase()).join(", ") : "NINGUNO";
-
-      // Resto de campos libres
-      formData.forEach((value, key) => {
-        if (value && value.trim() !== "" && !key.includes("_OPCION") && !["TIPO DOCUMENTO","DOMICILIO","TELÉFONO","ABOGADO","COMUNICARSE CON","INTERPRETE","OTROS DERECHOS"].includes(key)) {
-          data[key] = value.toUpperCase();
+    // Mostrar inputs "OTRO" + bloquear NºDOC si indocumentado + mostrar IDIOMA si intérprete "OTRO"
+    document.addEventListener('change',e=>{
+      if(e.target.id==="tipoDocumento"){
+        const val=e.target.value;
+        document.getElementById('tipoDocumentoOtro').style.display=(val==="OTRO")?"block":"none";
+        const num=document.getElementById("numeroDocumento");
+        if(val==="INDOCUMENTADO/A"){ num.value=""; num.disabled=true; } else { num.disabled=false; }
+      }
+      if(e.target.id==="interpreteOpcion"){
+        document.getElementById('idioma').style.display=(e.target.value==="OTRO")?"block":"none";
+      }
+      // Mostrar/ocultar campos de texto asociados a "OTRO"
+      if(e.target.tagName==="SELECT" && e.target.closest('.field-card')){
+        const input=e.target.closest('.field-card').querySelector('input[type="text"]');
+        if(input && !["tipoDocumento","interpreteOpcion"].includes(e.target.id)){
+          input.style.display=(e.target.value==="OTRO")?"block":"none";
         }
-      });
-
-      // Cabeceras fijas
-      const headers = [
-        "TIPO DOCUMENTO","NºDOCUMENTO","SEXO","Nombre","APELLIDOS","Nombre de los Padres",
-        "FECHA DE NACIMIENTO","LUGAR DE NACIMIENTO","NACIONALIDAD","DOMICILIO","TELÉFONO",
-        "DELITO","C.P. AGENTES","DILIGENCIAS","LUGAR DEL HECHO","LUGAR DE LA DETENCIÓN",
-        "HORA DEL HECHO","HORA DE LA DETENCIÓN","BREVE RESUMEN DE LOS HECHOS",
-        "INDICIOS POR LOS QUE SE DETIENE","ABOGADO","COMUNICARSE CON:","OTROS DERECHOS",
-        "INTERPRETE"
-      ];
-      const row = {};
-      headers.forEach(h => row[h] = data[h] || "");
-
-      // Excel
-      const ws = XLSX.utils.json_to_sheet([row], { header: headers });
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Registro");
-
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-
-      try {
-        const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
-          password: "americas",
-          encryptionStrength: 3
-        });
-        await writer.add("DETENIDO.xlsx", new zip.BlobReader(blob));
-        const zipBlob = await writer.close();
-        saveAs(zipBlob, "DETENIDO.zip");
-        showMessage("✅ Archivo 'DETENIDO.zip' generado y descargado.\nProtegido con contraseña: americas");
-      } catch (err) {
-        saveAs(blob, "DETENIDO.xlsx");
-        showMessage("⚠️ No se pudo cifrar ZIP, se descargó Excel sin proteger.");
       }
     });
+
+const selectDelito = document.getElementById("delitoSelect");
+const lista = document.getElementById("delitosSeleccionados");
+const inputOtro = document.getElementById("delitoOtroTexto");
+let delitosElegidos = [];
+
+selectDelito.addEventListener("change", ()=>{
+  const val = selectDelito.value;
+  
+  if (val === "OTRO") {
+    inputOtro.style.display = "inline-block";
+    inputOtro.focus();
+    return;
+  }
+  
+  if (val && !delitosElegidos.includes(val)) {
+    delitosElegidos.push(val);
+    renderDelitos();
+  }
+  // reset
+  selectDelito.value = "";
+});
+
+inputOtro.addEventListener("keydown", e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    const val = inputOtro.value.trim();
+    if(val && !delitosElegidos.includes(val)){
+      delitosElegidos.push(val);
+      renderDelitos();
+    }
+    inputOtro.value="";
+    inputOtro.style.display="none";
+    selectDelito.value="";
+  }
+});
+
+function renderDelitos() {
+  lista.innerHTML="";
+  if(delitosElegidos.length===0){
+    lista.innerHTML="<em>Ningún delito seleccionado</em>";
+    return;
+  }
+  delitosElegidos.forEach((d,i)=>{
+    const span=document.createElement("span");
+    span.textContent=d;
+    span.style.cssText="padding:3px 6px; margin:2px; background:#eef; border:1px solid #99c; border-radius:4px; display:inline-block; cursor:pointer;";
+    span.title="Click para eliminar";
+    span.addEventListener("click", ()=>{ 
+      delitosElegidos.splice(i,1);
+      renderDelitos();
+    });
+    lista.appendChild(span);
+  });
+}
+
+// Normaliza: quita acentos, pasa a mayúsculas y compacta
+function normalizeKey(str) {
+  return str
+    ? str.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"").trim()
+    : "";
+}
+
+// Auxiliar: maneja selects con input asociado (NO APORTA / OTRO)
+function setSelectWithInput(selectName, excelValue) {
+  const select = document.querySelector(`[name="${selectName}"]`);
+  if (!select) return;
+
+  const card = select.closest(".field-card");
+  const textInput = card ? card.querySelector("input[type=text], textarea") : null;
+  const normExcel = normalizeKey(excelValue);
+
+  let matched = false;
+  for (const opt of select.options) {
+    if (normalizeKey(opt.value) === normExcel) {
+      select.value = opt.value;
+      matched = true;
+      if (textInput) textInput.value = "";
+      break;
+    }
+  }
+
+  if (!matched) {
+    if (!excelValue || ["NOAPORTA","NO","DEOFICIO"].includes(normExcel)) {
+      // Selecciona opción directa
+      const fallback = Array.from(select.options).find(opt =>
+        ["NOAPORTA","NO","DEOFICIO"].includes(normalizeKey(opt.value))
+      );
+      if (fallback) select.value = fallback.value;
+      if (textInput) textInput.value = "";
+    } else {
+      // Valor libre → OTRO
+      const otherOpt = Array.from(select.options).find(opt => normalizeKey(opt.value) === "OTRO");
+      if (otherOpt) select.value = otherOpt.value;
+      if (textInput) textInput.value = excelValue;
+    }
+  }
+
+  select.dispatchEvent(new Event("change"));
+}
+
+    // Cargar Excel previo
+    async function cargarExcel() {
+  const input = document.getElementById("fileInputXLSX");
+  input.click();
+
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      rows.forEach(([pregunta, respuesta]) => {
+        if (!pregunta) return;
+        const qNorm = normalizeKey(pregunta);
+        const r = (respuesta || "").toString().trim();
+
+        // ---- Casos con combo "NO APORTA/OTRO" ----
+        if (qNorm === "DOMICILIO") { setSelectWithInput("DOMICILIO_OPCION", r); return; }
+        if (qNorm === "TELEFONO") { setSelectWithInput("TELÉFONO_OPCION", r); return; }
+        if (qNorm === "NOMBREDELOSPADRES") { setSelectWithInput("NOMBRE_PADRES_OPCION", r); return; }
+        if (qNorm === "ABOGADO") { setSelectWithInput("ABOGADO_OPCION", r); return; }
+        if (qNorm === "COMUNICARSECON") { setSelectWithInput("COMUNICARSE CON_OPCION", r); return; }
+        if (qNorm === "INFORMARDESUDETENCION" || qNorm === "INFORMARDESUDETENCIONA") {
+          setSelectWithInput("INFORMAR DE SU DETENCIÓN_OPCION", r); return;
+        }
+        if (qNorm === "INTERPRETE") { setSelectWithInput("INTERPRETE_OPCION", r); return; }
+
+        // ---- Caso especial: delitos múltiples ----
+        if (qNorm === "DELITO") {
+          delitosElegidos = r.split(/,\s*|\s+y\s+/).map(v => v.trim()).filter(Boolean);
+          renderDelitos();
+          return;
+        }
+
+        // ---- Campos simples (input/select/textarea) ----
+        const allInputs = document.querySelectorAll("[name]");
+        for (const el of allInputs) {
+          const elNorm = normalizeKey(el.name);
+          if (elNorm === qNorm) {
+            if (el.tagName === "SELECT") {
+              el.value = r;
+              el.dispatchEvent(new Event("change"));
+            } else {
+              el.value = r;
+            }
+            break;
+          }
+        }
+      });
+
+      document.getElementById("message").innerText = "✅ XLSX cargado y formulario rellenado";
+    } catch (err) {
+      console.error(err);
+      document.getElementById("message").innerText = "❌ Error al cargar XLSX: " + (err?.message || err);
+    }
+  };
+}
+
+    // Guardar con File System Access (evita MOTW)
+    async function saveBlob(blob, filename){
+      if(window.showSaveFilePicker){
+        try{
+          const handle=await window.showSaveFilePicker({
+            suggestedName:filename,
+            types:[{description:'Archivo ZIP',accept:{'application/zip':['.zip']}}]
+          });
+          const writable=await handle.createWritable();
+          await writable.write(blob); await writable.close(); return;
+        }catch(e){console.warn('FSA fallback',e);}
+      }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);
+      a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1500);
+    }
+
+    // Generar ODT con reemplazos en MAYÚSCULAS
+    async function generarODTUint8(base64,dataUpper){
+      const bytes=Uint8Array.from(atob(base64.replace(/[\r\n\t ]+/g,"")),c=>c.charCodeAt(0));
+      const zip=await JSZip.loadAsync(bytes);
+      let xml=await zip.file("content.xml").async("string");
+
+      for(const k in dataUpper){
+        const v=(dataUpper[k]??"").toString();
+        xml = xml.replace(buildFlexibleRegex(k), v);
+        xml = xml.replace(new RegExp("\\{\\{\\s*"+escapeRegExp(k)+"\\s*\\}\\}","g"), v);
+      }
+      // Limpia cualquier resto {{...}}
+      xml = xml.replace(/{{\s*[^}]+\s*}}/g,"");
+
+      zip.file("content.xml",xml);
+      return await zip.generateAsync({type:"uint8array",compression:"DEFLATE"});
+    }
+
+    // Generar XLSX sin cabecera, dos columnas, ancho máx 40 chars, A derecha, B centrada, horas con formato h:mm
+    async function generarXLSXUint8(rows, sheetName="Resumen"){
+      const x = new JSZip();
+
+      const contentTypes =
+`<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  <Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+</Types>`;
+
+      const rels =
+`<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+</Relationships>`;
+
+      const wb =
+`<?xml version="1.0" encoding="UTF-8"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <bookViews><workbookView/></bookViews>
+  <sheets>
+    <sheet name="${xmlEscape(sheetName)}" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`;
+
+      const wbRels =
+`<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+      // Estilos: 0 base, 1 preguntas (derecha), 2 respuestas (centro), 3 hora (centro + num)
+      const styles =
+`<?xml version="1.0" encoding="UTF-8"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="1">
+    <numFmt numFmtId="165" formatCode="h:mm"/>
+  </numFmts>
+  <fonts count="1">
+    <font><sz val="11"/><color theme="1"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
+  <borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="4">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="1"><alignment wrapText="1" vertical="top" horizontal="right"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyAlignment="1"><alignment wrapText="1" vertical="center" horizontal="center"/></xf>
+    <xf numFmtId="165" fontId="0" fillId="0" borderId="0" applyNumberFormat="1" applyAlignment="1"><alignment vertical="center" horizontal="center"/></xf>
+  </cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+      // Ancho máx 40 caracteres en ambas columnas
+      const cols = `<cols>
+        <col min="1" max="1" width="40" customWidth="1"/>
+        <col min="2" max="2" width="40" customWidth="1"/>
+      </cols>`;
+
+      // Utilidad para convertir "HH:MM" a fracción de día Excel
+      function parseTimeToExcelFraction(str){
+        const m = /^(\d{1,2}):(\d{2})$/.exec(str||"");
+        if(!m) return null;
+        const h = Math.min(23, parseInt(m[1],10));
+        const mm = Math.min(59, parseInt(m[2],10));
+        return (h/24) + (mm/1440);
+      }
+
+      function cellInline(r, cIdx, text, style){
+        const col = (cIdx===1?'A':'B');
+        const ref = col + r;
+        const s = (style!=null)?` s="${style}"`:'';
+        return `<c r="${ref}" t="inlineStr"${s}><is><t>${xmlEscape(text||'')}</t></is></c>`;
+      }
+      function cellNumber(r, cIdx, num, style){
+        const col = (cIdx===1?'A':'B');
+        const ref = col + r;
+        the_s = (style!=null)?` s="${style}"`:'';
+        return `<c r="${ref}"${the_s}><v>${num}</v></c>`;
+      }
+
+      let rowXml = '';
+      for(let i=0;i<rows.length;i++){
+        const r = i+1;
+        const pregunta = rows[i][0] ?? '';
+        const respuesta = rows[i][1] ?? '';
+
+        // Columna A: preguntas, DERECHA (style 1)
+        const a = cellInline(r,1,pregunta,1);
+
+        // Columna B: respuestas, CENTRO (style 2) o HORA (style 3)
+        let b;
+        if(pregunta==="Hora del hecho" || pregunta==="Hora de la detención"){
+          const frac = parseTimeToExcelFraction(respuesta);
+          if(frac!=null){ b = cellNumber(r,2,frac,3); } else { b = cellInline(r,2,respuesta,2); }
+        } else {
+          b = cellInline(r,2,respuesta,2);
+        }
+
+        rowXml += `<row r="${r}" spans="1:2">${a}${b}</row>`;
+      }
+
+      const sheet =
+`<?xml version="1.0" encoding="UTF-8"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  ${cols}
+  <sheetData>
+    ${rowXml}
+  </sheetData>
+  <sheetViews>
+    <sheetView tabSelected="1" workbookViewId="0"/>
+  </sheetViews>
+</worksheet>`;
+
+      const core =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:dcterms="http://purl.org/dc/terms/"
+ xmlns:dcmitype="http://purl.org/dcmitype/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dc:title>Resumen Registro</dc:title>
+  <dc:subject>Registro de Detenidos</dc:subject>
+  <dc:creator>Formulario Registro</dc:creator>
+  <cp:lastModifiedBy>Formulario Registro</cp:lastModifiedBy>
+  <dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:modified>
+</cp:coreProperties>`;
+
+      const app =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
+ xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+  <Application>Formulario Registro</Application>
+  <DocSecurity>0</DocSecurity>
+  <ScaleCrop>false</ScaleCrop>
+  <Company></Company>
+  <LinksUpToDate>false</LinksUpToDate>
+  <SharedDoc>false</SharedDoc>
+  <HyperlinksChanged>false</HyperlinksChanged>
+  <AppVersion>16.0000</AppVersion>
+</Properties>`;
+
+      x.file('[Content_Types].xml', contentTypes);
+      x.folder('_rels').file('.rels', rels);
+      const xl = x.folder('xl');
+      xl.file('workbook.xml', wb);
+      xl.folder('_rels').file('workbook.xml.rels', wbRels);
+      xl.file('styles.xml', styles);
+      xl.folder('worksheets').file('sheet1.xml', sheet);
+      const props = x.folder('docProps');
+      props.file('core.xml', core);
+      props.file('app.xml', app);
+
+      return await x.generateAsync({type:'uint8array'});
+    }
+
+    async function generarZipUnicoSeguro(){
+      const msg=document.getElementById("message"); msg.innerText="Generando ZIP...";
+      try{
+        const form=document.getElementById("registroForm");
+        const fd=new FormData(form); const data={}; fd.forEach((v,k)=>data[k]=v);
+
+
+        // Normalizaciones previas
+        const optTD=data["TIPO DOCUMENTO_OPCION"];
+        data["TIPO DOCUMENTO"] = (optTD==="OTRO") ? (data["TIPO DOCUMENTO"]||"") : optTD;
+        if(optTD==="INDOCUMENTADO/A"){ data["NºDOCUMENTO"] = ""; } else { data["NºDOCUMENTO"] = data["NºDOCUMENTO"] || ""; }
+        data["SEXO"]=data["SEXO_OPCION"] || "";
+        data["INSTRUCTOR"] = data["INSTRUCTOR"] || "";
+	data["FECHA_GENERACION"] = document.getElementById('fechaGeneracion')?.value || '';
+
+	// 📌 Normalizar delitos elegidos en sub-globo
+let delitoTexto="";
+if (delitosElegidos.length===1){
+  delitoTexto=delitosElegidos[0];
+} else if (delitosElegidos.length===2){
+  delitoTexto=delitosElegidos[0]+" y "+delitosElegidos[1];
+} else if (delitosElegidos.length>2){
+  delitoTexto=delitosElegidos.slice(0,-1).join(", ")+" y "+delitosElegidos[delitosElegidos.length-1];
+}
+data["DELITO"]=delitoTexto;
+
+        const abOpt = data["ABOGADO_OPCION"];
+        if(abOpt==="DE OFICIO"){ data["ABOGADO"]="de oficio."; }
+        else if(abOpt==="OTRO"){ data["ABOGADO"]= (data["ABOGADO"]||""); }
+        else { data["ABOGADO"]= data["ABOGADO"] || ""; }
+
+        const ccOpt = data["COMUNICARSE CON_OPCION"];
+        if(ccOpt==="NADIE"){ data["COMUNICARSE CON:"]="nadie."; }
+        else if(ccOpt==="OTRO"){ data["COMUNICARSE CON:"]= (data["COMUNICARSE CON:"]||""); }
+        else { data["COMUNICARSE CON:"]= data["COMUNICARSE CON:"] || ""; }
+
+	const infOpt = data["INFORMAR DE SU DETENCION A:_OPCION"];
+        if(infOpt==="NADIE"){ data["INFORMAR DE SU DETENCION A:"]="nadie."; }
+        else if(infOpt==="OTRO"){ data["INFORMAR DE SU DETENCION A:"]= (data["INFORMAR DE SU DETENCION A:"]||""); }
+        else { data["INFORMAR DE SU DETENCION A:"]= data["INFORMAR DE SU DETENCION A:"] || ""; }
+
+
+        const intOpt = data["INTERPRETE_OPCION"] || "NO";
+let interpreteDisplay = "NO";
+
+if (intOpt === "OTRO") {
+  interpreteDisplay = data["IDIOMA"] || "";
+} else if (intOpt !== "NO") {
+  // Si es INGLÉS, ÁRABE, ITALIANO, RUSO...
+  interpreteDisplay = intOpt;
+
+// 🔑 Alias para ODT: soportar {{IDIOMA}} o {{INTERPRETE}}
+data["IDIOMA"] = interpreteDisplay;
+data["INTERPRETE"] = interpreteDisplay;
+
+}
+
+	const nomDisplay = (data["NOMBRE_PADRES_OPCION"]==="OTRO") ? (data["NOMBRE_PADRES"]||"") : (data["NOMBRE_PADRES_OPCION"]||"");
+        const domDisplay = (data["DOMICILIO_OPCION"]==="OTRO") ? (data["DOMICILIO"]||"") : (data["DOMICILIO_OPCION"]||"");
+        const telDisplay = (data["TELÉFONO_OPCION"]==="OTRO") ? (data["TELÉFONO"]||"") : (data["TELÉFONO_OPCION"]||"");
+
+        data["MEDICO"] = (data["MEDICO"]==="SI") ? "SI" : "NO";
+        data["CONSULADO"] = (data["CONSULADO"]==="SI") ? "SI" : "NO";
+
+        // Asegurar que en ODT también salga "NO APORTA" si es la opción por defecto
+	data["NOMBRE_PADRES"] = nomDisplay;
+	data["Nombre de los Padres"] = nomDisplay;
+        data["DOMICILIO"] = domDisplay;
+        data["TELÉFONO"] = telDisplay;
+
+        // Construir mapa en MAYÚSCULAS para ODT
+        const dataUpper = {};
+        for(const k in data){
+          dataUpper[k] = U(data[k]);
+        }
+const zip = new JSZip();
+        // 🔎 Construir nombre base para carpeta y archivos
+function removeDiacritics(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ñ/gi,'n');
+}
+
+const diligPartRaw = String(data["DILIGENCIAS"] || '').replace(/\//g, '-').trim();
+const delitoPart   = String(data["DELITO"] || '').trim();
+const nombrePart   = String(data["Nombre"] || '').trim();
+const apellidosPart= String(data["APELLIDOS"] || '').trim();
+
+let combined = `${diligPartRaw} ${delitoPart} ${nombrePart} ${apellidosPart}`.trim()
+  .replace(/_/g,' ')
+  .replace(/\s+/g,' ');
+
+combined = removeDiacritics(combined).replace(/[^A-Za-z0-9 \-]/g,'').trim();
+
+const base = combined.toUpperCase() || "DOCUMENTO";
+
+// 📂 Crear carpeta interna del ZIP
+const folder = zip.folder(base);
+
+// 👮‍♂️ Calcular edad
+function calcularEdad(fechaStr){
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(fechaStr||"");
+  if(!m) return null;
+  const dia=parseInt(m[1],10), mes=parseInt(m[2],10)-1, anio=parseInt(m[3],10);
+  const nacimiento=new Date(anio, mes, dia), hoy=new Date();
+  let edad=hoy.getFullYear()-nacimiento.getFullYear();
+  const mDiff=hoy.getMonth()-nacimiento.getMonth();
+  if(mDiff<0 || (mDiff===0 && hoy.getDate()<nacimiento.getDate())) edad--;
+  return edad;
+}
+const edad = calcularEdad(data["FECHA DE NACIMIENTO"]);
+
+// 📄 Construir lista de documentos
+let docs = [
+  { key:"fax", name:`Fax.odt` },
+  { key:"derechos_espanol", name:`derechos_esp.odt` }
+];
+
+// Edad → amarillas/azules
+if (edad !== null) {
+  if (edad >= 18) docs.unshift({ key:"amarillas", name:`amarillas.odt` });
+  else docs.unshift({ key:"azules", name:`azules.odt` });
+} else {
+  docs.unshift({ key:"azules", name:`azules.odt` });
+  docs.unshift({ key:"amarillas", name:`amarillas.odt` });
+}
+
+// Intérprete → idioma adicional
+const idiomaSel = (intOpt || "").trim().toUpperCase();
+switch (idiomaSel) {
+  case "INGLÉS":
+    docs.push({ key:"derechos_ingles", name:`derechos_ing.odt` });
+    break;
+  case "ÁRABE":
+    docs.push({ key:"derechos_arabe", name:`derechos_arabe.odt` });
+    break;
+  case "ITALIANO":
+    docs.push({ key:"derechos_italiano", name:`derechos_ita.odt` });
+    break;
+  case "RUSO":
+    docs.push({ key:"derechos_ruso", name:`derechos_ruso.odt` });
+    break;
+  case "OTRO":
+    const idiomaOtro = (data["IDIOMA"]||"").trim().toLowerCase();
+    if (idiomaOtro) {
+      const keyCustom = `derechos_${idiomaOtro}`;
+      if (PLANTILLAS[keyCustom]) {
+        docs.push({ key:keyCustom, name:`${keyCustom}_${base}.odt` });
+      }
+    }
+    break;
+}
+
+// 📝 Generar ODTs dentro de la carpeta
+let ok=0;
+for(const d of docs){
+  if(!PLANTILLAS[d.key]) continue;
+  const odt=await generarODTUint8(PLANTILLAS[d.key],dataUpper);
+  folder.file(d.name, odt, {compression:"STORE"});
+  ok++;
+}
+
+// 🧾 Generar XLSX de resumen
+const hoy = new Date();
+const dd=String(hoy.getDate()).padStart(2,'0');
+const mm=String(hoy.getMonth()+1).padStart(2,'0');
+const yyyy=String(hoy.getFullYear());
+const fechaStr=`${dd}-${mm}-${yyyy}`;
+const excelName = `${sanitizeForFilename(data["Nombre"]||"")} ${sanitizeForFilename(data["APELLIDOS"]||"")} ${fechaStr}.xlsx`.trim();
+
+const filas = [
+  ["Nombre", U(data["Nombre"])],
+  ["Apellidos", U(data["APELLIDOS"])],
+  ["Tipo de documento", U(data["TIPO DOCUMENTO"])],
+  ["Nº Documento", U(data["NºDOCUMENTO"])],
+  ["Sexo", U(data["SEXO"])],
+  ["Nacionalidad", U(data["NACIONALIDAD"])],
+  ["Nombre de los Padres", U(data["Nombre de los Padres"])],
+  ["Fecha de nacimiento", U(data["FECHA DE NACIMIENTO"])],
+  ["Lugar de nacimiento", U(data["LUGAR DE NACIMIENTO"])],
+  ["Domicilio", U(domDisplay)],
+  ["Teléfono", U(telDisplay)],
+  ["Delito", U(data["DELITO"])],
+  ["C.P. Agentes", U(data["C.P. AGENTES"])],
+  ["Diligencias", U(data["DILIGENCIAS"])],
+  ["Instructor", U(data["INSTRUCTOR"])],
+  ["Lugar del hecho", U(data["LUGAR DEL HECHO"])],
+  ["Lugar de la detención", U(data["LUGAR DE LA DETENCIÓN"])],
+  ["Hora del hecho", (document.getElementById('horaHecho')?.value || data["HORA DEL HECHO"] || "").trim()],
+  ["Hora de la detención", (document.getElementById('horaDetencion')?.value || data["HORA DE LA DETENCIÓN"] || "").trim()],
+  ["Breve resumen de los hechos", U(data["BREVE RESUMEN DE LOS HECHOS"])],
+  ["Indicios por los que se detiene", U(data["INDICIOS POR LOS QUE SE DETIENE"])],
+  ["Abogado", U(data["ABOGADO"])],
+  ["Comunicarse con", U(data["COMUNICARSE CON:"])],
+  ["Informar de su detención a:", U(data["INFORMAR DE SU DETENCION A:"])],
+  ["Intérprete", U(interpreteDisplay)],
+  ["Médico", U(data["MEDICO"])],
+  ["Consulado", U(data["CONSULADO"])],
+  ["Indicativo", U(data["Indicativo"])],
+  ["Fecha de generación", U(data["FECHA_GENERACION"])]
+];
+
+const xlsx = await generarXLSXUint8(filas,"Resumen");
+folder.file(excelName || `resumen_${base}.xlsx`, xlsx, {compression:"STORE"});
+
+// 🎁 Guardar ZIP
+const blob=await zip.generateAsync({type:"blob",compression:"STORE"});
+await saveBlob(blob, `${base}.zip`);
+msg.innerText=`✅ ZIP generado (${ok} ODT + XLSX)`;
+      }catch(err){
+        console.error(err);
+        msg.innerText="❌ "+(err?.message||err);
+      }
+    }
   </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const hoy = new Date();
+  const dia = String(hoy.getDate()).padStart(2, '0');
+  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+  const anio = hoy.getFullYear();
+  const fecha = `${dia}/${mes}/${anio}`;
+
+  const inputFecha = document.getElementById("fechaGeneracion");
+  if (inputFecha && !inputFecha.value) {
+    inputFecha.value = fecha;
+  }
+});
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('Service Worker registrado con éxito:', registration);
+        })
+        .catch(error => {
+          console.log('Fallo en el registro del Service Worker:', error);
+        });
+    });
+  }
+</script>
+
 </body>
 </html>
