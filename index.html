@@ -57,6 +57,29 @@
 textarea {
   min-height: 34px;     /* altura visible del textarea */
 }
+
+/* Ajuste responsivo para que en móvil los campos de "Hechos" vayan en columna */
+.grid-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.grid-rows .field-card {
+  flex: 1;
+  min-width: 200px; /* así en pantallas grandes aún se ve en fila */
+}
+
+@media (max-width: 768px) {
+  .grid-rows {
+    flex-direction: column;   /* <--- fuerza apilado vertical */
+  }
+  .grid-rows .field-card {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+}
+	  
   </style>
 
 </head>
@@ -906,4 +929,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
